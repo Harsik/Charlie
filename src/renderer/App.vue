@@ -3,88 +3,59 @@
     <v-app dark>
       <v-navigation-drawer
         fixed
-        :mini-variant="miniVariant"
-        :clipped="clipped"
         v-model="drawer"
         app
       >
         <v-list>
           <v-list-tile
             router
-            :to="item.to"
+            :to="navMenu.to"
             :key="i"
-            v-for="(item, i) in items"
-            exact
+            v-for="(navMenu, i) in navMenus"
           >
             <v-list-tile-action>
-              <v-icon v-html="item.icon"></v-icon>
+              <v-icon v-html="navMenu.icon"></v-icon>
             </v-list-tile-action>
             <v-list-tile-content>
-              <v-list-tile-title v-text="item.title"></v-list-tile-title>
+              <v-list-tile-title v-text="navMenu.title"></v-list-tile-title>
             </v-list-tile-content>
           </v-list-tile>
         </v-list>
       </v-navigation-drawer>
       <v-toolbar fixed app :clipped-left="clipped">
-        <v-toolbar-side-icon @click.native.stop="drawer = !drawer" v-if='currentUser'></v-toolbar-side-icon>
-        <!-- <v-btn
-          icon
-          @click.native.stop="miniVariant = !miniVariant"
-        >
-          <v-icon v-html="miniVariant ? 'chevron_right' : 'chevron_left'"></v-icon>
-        </v-btn> -->
-        <!-- <v-btn
-          icon
-          @click.native.stop="clipped = !clipped"
-        >
-          <v-icon>web</v-icon>
-        </v-btn> -->
-        <!-- <v-btn
-          icon
-          @click.native.stop="fixed = !fixed"
-        >
-          <v-icon>remove</v-icon>
-        </v-btn> -->
-        <v-toolbar-title v-text="title"></v-toolbar-title>
+        <v-toolbar-side-icon @click.native.stop="drawer = !drawer" v-if='isAuthenticated'></v-toolbar-side-icon>
+        <v-toolbar-title v-text="appTitle"></v-toolbar-title>
         <v-spacer></v-spacer>
-        <!-- <v-btn
-          icon
-          @click.native.stop="rightDrawer = !rightDrawer"
-        >
-          <v-icon>menu</v-icon>
-        </v-btn> -->
-        <v-toolbar-items v-if='!currentUser'>
-          <v-btn flat to='/login'>login</v-btn>
+        <v-toolbar-items v-if='!isAuthenticated'>
+          <v-btn flat to='/login'>Login</v-btn>
           <v-btn flat to='/signup'>Sign up</v-btn>
+        </v-toolbar-items>
+        <v-toolbar-items v-if='isAuthenticated'>
+          <v-layout align-center justify-space-between>
+          <!-- <v-icon large>notification_important</v-icon> -->
+          <!-- <v-icon large>more_vert</v-icon> -->
+          <v-menu offset-y>
+            <v-btn slot="activator" icon>
+              <v-icon large>more_vert</v-icon>
+            </v-btn>
+            <v-list>
+              <v-list-tile v-for="(subMenu, i) in subMenus" :key='i' :to='subMenu.to'>
+                <v-list-tile-title>{{ subMenu.title }}</v-list-tile-title>
+              </v-list-tile>
+            </v-list>
+          </v-menu>
+          </v-layout>
+          <!-- <v-btn flat to='/logout'>Logout</v-btn>
+          <v-btn flat to='/profile'>Profile</v-btn> -->
         </v-toolbar-items>
       </v-toolbar>
       <v-content>
         <v-container fluid fill-height>
           <v-slide-y-transition mode="out-in">
-            <router-view :currentUser='currentUser' @sendCurrentUser="getCurrentUser"></router-view>
+            <router-view :isAuthenticated='isAuthenticated' @sendAuthenticated="getAuthenticated"></router-view>
           </v-slide-y-transition>
         </v-container>
       </v-content>
-      <!-- <v-navigation-drawer
-        temporary
-        fixed
-        :right="right"
-        v-model="rightDrawer"
-        app
-      >
-        <v-list>
-          <v-list-tile @click.native="right = !right">
-            <v-list-tile-action>
-              <v-icon light>compare_arrows</v-icon>
-            </v-list-tile-action>
-            <v-list-tile-title>Switch drawer (click me)</v-list-tile-title>
-          </v-list-tile>
-        </v-list>
-      </v-navigation-drawer>
-      <v-footer :fixed="fixed" app>
-        <v-spacer></v-spacer>
-        <span>&copy; 2017</span>
-      </v-footer> -->
     </v-app>
   </div>
 </template>
@@ -94,28 +65,29 @@
     // props: ['currentUser'],
     name: 'Charlie',
     data: () => ({
+      appTitle: 'AppTitle',
+      isAuthenticated: false,
       currentUser: false,
       clipped: false,
       drawer: false,
-      fixed: false,
-      // toolbarSideIcon: false,
-      items: [
+      navMenus: [
         { icon: 'apps', title: 'Welcome', to: '/' },
         { icon: 'bubble_chart', title: 'Inspire', to: '/inspire' },
-        { icon: 'title', title: 'test', to: '/test' },
-        { icon: 'attachment', title: 'Login', to: '/login' }
+        { icon: 'title', title: 'test', to: '/test' }
       ],
-      miniVariant: false,
-      right: false,
-      rightDrawer: false,
-      title: 'electronApp'
+      subMenus: [
+        { title: 'Profile', to: '/profile' },
+        { title: 'Setting', to: '/setting' },
+        { title: 'Logout', to: '/logout' }
+      ]
     }),
     methods: {
-      getCurrentUser: function (text) {
-        this.currentUser = text
-      }
+      getAuthenticated (text) {
+        this.isAuthenticated = text
+      },
+      on () {}
     }
-  }
+}
 </script>
 
 <style>

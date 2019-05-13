@@ -18,7 +18,7 @@
 
 <script>
 export default {
-  props: ['currentUser'],
+  props: ['isAuthenticated'],
   name: 'Login',
   data: () => ({
     email: null,
@@ -28,7 +28,7 @@ export default {
   methods: {
     buttonLogin () {
       localStorage.email = this.email
-      localStorage.password = this.password
+      // localStorage.password = this.password
       const headers = new Headers({
         'Content-Type': 'application/json'
       })
@@ -47,7 +47,7 @@ export default {
               return Promise.reject(json)
             }
             localStorage.accessToken = json.accessToken
-            this.$emit('sendCurrentUser', true)
+            this.$emit('sendAuthenticated', true)
             // console.log(json.accessToken)
             this.$router.push('/test')
             // return json

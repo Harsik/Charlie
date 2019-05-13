@@ -16,7 +16,7 @@
       </v-chip>
     </v-flex>
     <v-flex xs12>
-      <v-card>
+      <!-- <v-card>
         <v-card-title>
           {{fileContent}}
         </v-card-title>
@@ -32,7 +32,7 @@
             파일 선택
           </v-btn>
         </v-card-actions>
-      </v-card>
+      </v-card> -->
 
     </v-flex>
     <v-snackbar
