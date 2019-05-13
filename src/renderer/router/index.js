@@ -26,7 +26,7 @@ export default new Router({
       component: require('@/components/testFile').default
     },
     {
-      path: '/Login',
+      path: '/login',
       name: 'Login',
       component: require('@/components/Login').default
     },

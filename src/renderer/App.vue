@@ -26,7 +26,7 @@
         </v-list>
       </v-navigation-drawer>
       <v-toolbar fixed app :clipped-left="clipped">
-        <v-toolbar-side-icon @click.native.stop="drawer = !drawer"></v-toolbar-side-icon>
+        <v-toolbar-side-icon @click.native.stop="drawer = !drawer" v-if='currentUser'></v-toolbar-side-icon>
         <!-- <v-btn
           icon
           @click.native.stop="miniVariant = !miniVariant"
@@ -53,11 +53,15 @@
         >
           <v-icon>menu</v-icon>
         </v-btn> -->
+        <v-toolbar-items v-if='!currentUser'>
+          <v-btn flat to='/login'>login</v-btn>
+          <v-btn flat to='/signup'>Sign up</v-btn>
+        </v-toolbar-items>
       </v-toolbar>
       <v-content>
         <v-container fluid fill-height>
           <v-slide-y-transition mode="out-in">
-            <router-view></router-view>
+            <router-view :currentUser='currentUser' @sendCurrentUser="getCurrentUser"></router-view>
           </v-slide-y-transition>
         </v-container>
       </v-content>
@@ -87,22 +91,30 @@
 
 <script>
   export default {
-    name: 'elecapp',
+    // props: ['currentUser'],
+    name: 'Charlie',
     data: () => ({
+      currentUser: false,
       clipped: false,
       drawer: false,
       fixed: false,
+      // toolbarSideIcon: false,
       items: [
         { icon: 'apps', title: 'Welcome', to: '/' },
         { icon: 'bubble_chart', title: 'Inspire', to: '/inspire' },
         { icon: 'title', title: 'test', to: '/test' },
-        { icon: 'attachment', title: 'Login', to: '/Login' }
+        { icon: 'attachment', title: 'Login', to: '/login' }
       ],
       miniVariant: false,
       right: false,
       rightDrawer: false,
       title: 'electronApp'
-    })
+    }),
+    methods: {
+      getCurrentUser: function (text) {
+        this.currentUser = text
+      }
+    }
   }
 </script>
 
