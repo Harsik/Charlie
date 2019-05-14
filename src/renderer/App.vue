@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <v-app dark>
+    <v-app>
       <v-navigation-drawer
         fixed
         v-model="drawer"
@@ -23,11 +23,11 @@
         </v-list>
       </v-navigation-drawer>
       <v-toolbar fixed app :clipped-left="clipped">
-        <v-toolbar-side-icon @click.native.stop="drawer = !drawer" v-if='isAuthenticated'></v-toolbar-side-icon>
+        <v-toolbar-side-icon @click.native.stop="drawer = !drawer"></v-toolbar-side-icon>
         <v-toolbar-title v-text="appTitle"></v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items v-if='!isAuthenticated'>
-          <v-btn flat to='/login'>Login</v-btn>
+          <v-btn flat to='/signin'>Sign in</v-btn>
           <v-btn flat to='/signup'>Sign up</v-btn>
         </v-toolbar-items>
         <v-toolbar-items v-if='isAuthenticated'>
@@ -52,10 +52,24 @@
       <v-content>
         <v-container fluid fill-height>
           <v-slide-y-transition mode="out-in">
-            <router-view :isAuthenticated='isAuthenticated' @sendAuthenticated="getAuthenticated"></router-view>
+            <router-view :isAuthenticated='isAuthenticated' @sendAuthentication='getAuthentication' @setSnackbar='setSnackbar'></router-view>
           </v-slide-y-transition>
         </v-container>
       </v-content>
+      <v-snackbar
+      v-model="snackbar.model"
+      :color="snackbar.color"
+      :timeout="snackbar.timeout"
+      :top=true
+    >
+      {{ snackbar.text }}
+      <v-btn
+        flat
+        @click="snackbar.model = false"
+      >
+        Close
+      </v-btn>
+    </v-snackbar>
     </v-app>
   </div>
 </template>
@@ -70,6 +84,7 @@
       currentUser: false,
       clipped: false,
       drawer: false,
+      snackbar: { model: false, color: 'success', timeout: 1500, text: '' },
       navMenus: [
         { icon: 'apps', title: 'Welcome', to: '/' },
         { icon: 'bubble_chart', title: 'Inspire', to: '/inspire' },
@@ -82,10 +97,14 @@
       ]
     }),
     methods: {
-      getAuthenticated (text) {
-        this.isAuthenticated = text
+      getAuthentication (bool) {
+        this.isAuthenticated = bool
       },
-      on () {}
+      setSnackbar (set) {
+        this.snackbar.model = true
+        this.snackbar.color = set.color
+        this.snackbar.text = set.text
+      }
     }
 }
 </script>

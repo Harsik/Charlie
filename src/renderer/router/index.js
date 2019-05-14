@@ -26,15 +26,18 @@ export default new Router({
       component: require('@/components/testFile').default
     },
     {
-      path: '/login',
-      name: 'Login',
-      component: require('@/components/Login').default
+      path: '/signin',
+      name: 'Signin',
+      component: require('@/components/signin').default
     }, {
       path: '/logout',
       name: 'Logout',
       component: require('@/components/Logout').default
-    },
-    {
+    }, {
+      path: '/signup',
+      name: 'Signup',
+      component: require('@/components/Signup').default
+    }, {
       path: '*',
       redirect: '/'
     }

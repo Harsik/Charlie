@@ -28,8 +28,13 @@ export default {
   methods: {
     logout () {
       localStorage.accessToken = null
-      this.$emit('sendAuthenticated', false)
+      this.$emit('sendAuthentication', false)
       this.$router.push('/login')
+      this.logoutSuccessAlarm()
+    },
+    logoutSuccessAlarm () {
+      let set = { color: 'success', text: 'Logout Successful' }
+      this.$emit('setSnackbar', set)
     }
   }
 }
