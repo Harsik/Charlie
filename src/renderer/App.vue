@@ -24,17 +24,15 @@
       </v-navigation-drawer>
       <v-toolbar fixed app :clipped-left="clipped">
         <v-toolbar-side-icon @click.native.stop="drawer = !drawer"></v-toolbar-side-icon>
-        <v-toolbar-title v-text="appTitle"></v-toolbar-title>
+        <v-toolbar-title v-text="appTitle" @click='openWelcome'></v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items v-if='!isAuthenticated'>
-          <v-btn flat to='/signin'>Sign in</v-btn>
-          <v-btn flat to='/signup'>Sign up</v-btn>
+          <v-btn flat to='/login'>Login</v-btn>
+          <v-btn flat to='/signup'>Signup</v-btn>
         </v-toolbar-items>
         <v-toolbar-items v-if='isAuthenticated'>
           <v-layout align-center justify-space-between>
-          <!-- <v-icon large>notification_important</v-icon> -->
-          <!-- <v-icon large>more_vert</v-icon> -->
-          <v-menu offset-y>
+          <v-menu bottom left offset-y>
             <v-btn slot="activator" icon>
               <v-icon large>more_vert</v-icon>
             </v-btn>
@@ -45,8 +43,6 @@
             </v-list>
           </v-menu>
           </v-layout>
-          <!-- <v-btn flat to='/logout'>Logout</v-btn>
-          <v-btn flat to='/profile'>Profile</v-btn> -->
         </v-toolbar-items>
       </v-toolbar>
       <v-content>
@@ -104,6 +100,9 @@
         this.snackbar.model = true
         this.snackbar.color = set.color
         this.snackbar.text = set.text
+      },
+      openWelcome () {
+        this.$router.push('/welcome')
       }
     }
 }

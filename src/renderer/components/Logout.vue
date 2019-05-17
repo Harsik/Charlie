@@ -1,17 +1,6 @@
 <template>
   <v-layout align-start justify-center>
     <v-flex xs12 sm6>
-      <!-- <v-card>
-        <v-card-text>
-          <v-text-field id='inputID' label='Email' v-model='email'></v-text-field>
-          <v-text-field id='inputPassWord' label='PassWord' v-model='password'></v-text-field>
-        </v-card-text>
-        <v-card-actions>
-          <v-btn color='primary' @click='buttonLogin'>
-            <v-icon left>power_settings_new</v-icon>Login
-          </v-btn>
-        </v-card-actions>
-      </v-card>-->
     </v-flex>
   </v-layout>
 </template>
@@ -33,7 +22,11 @@ export default {
       this.logoutSuccessAlarm()
     },
     logoutSuccessAlarm () {
-      let set = { color: 'success', text: 'Logout Successful' }
+      const set = { color: 'success', text: 'Logout Successful' }
+      this.$emit('setSnackbar', set)
+    },
+    logoutFailAlarm () {
+      const set = { color: 'error', text: 'Logout Fail' }
       this.$emit('setSnackbar', set)
     }
   }

@@ -1,20 +1,34 @@
 <template>
   <v-layout align-start justify-center>
     <v-flex xs12 sm6>
-      <v-form ref='form' v-model='valid' lazy-validation>
-        <v-text-field label='Email' v-model='email' :rules='emailRules' clearable></v-text-field>
+      <v-card class="pa-3">
+        <div class="pa-3">
+  <v-layout align-center justify-center>
+      <v-icon x-large>perm_identity</v-icon>
+      <v-spacer></v-spacer>
+  <v-layout align-center justify-start>
+      {{ headerText }}
+  </v-layout>
+  </v-layout>
+  <v-divider inset></v-divider>
+  </div>
+      <v-form ref='form' v-model='valid' lazy-validation class="pa-3">
+        <v-text-field label='Email' v-model='email' :rules='emailRules' 
+          class="pa-3" clearable></v-text-field>
         <v-text-field
           label='Password'
           v-model='password'
           :rules='passwordRules'
           type='password'
-          hint='At least 8 characters'
+          @keyup.enter='login'
+          class="pa-3"
           clearable
         ></v-text-field>
-        <v-btn color='primary' :disabled='!valid' @click='buttonLogin'>
-          <v-icon left>power_settings_new</v-icon>Sign in
+        <v-btn color='primary' :disabled='!valid' @click='login'>
+          <v-icon left>power_settings_new</v-icon>Login
         </v-btn>
       </v-form>
+      </v-card>
     </v-flex>
   </v-layout>
 </template>
@@ -24,6 +38,7 @@ export default {
   props: ['isAuthenticated'],
   name: 'Login',
   data: () => ({
+    headerText: '\nThis is Login Page',
     valid: true,
     email: null,
     password: null,
@@ -43,22 +58,22 @@ export default {
       console.log('vertifyEmail active')
     },
     loginSuccessAlarm () {
-      let set = { color: 'success', text: 'Login Successful' }
+      const set = { color: 'success', text: 'Login Successful' }
       this.$emit('setSnackbar', set)
     },
     loginFailAlarm () {
-      let set = { color: 'error', text: 'Login Fail' }
+      const set = { color: 'error', text: 'Login Fail' }
       this.$emit('setSnackbar', set)
     },
-    buttonLogin () {
+    login () {
       if (this.$refs.form.validate()) {
         localStorage.email = this.email
         // localStorage.password = this.password
         const headers = new Headers({
           'Content-Type': 'application/json'
         })
-        // fetch('http://192.168.137.59:8080/Alpha/api/auth/signin', {
-        fetch('http://localhost:8080/api/auth/signin', {
+        // fetch('http://192.168.137.59:8080/Alpha/api/auth/login', {
+        fetch('http://localhost:8080/api/auth/login', {
           method: 'POST',
           headers: headers,
           body: JSON.stringify({
@@ -76,7 +91,7 @@ export default {
               localStorage.accessToken = json.accessToken
               this.$emit('sendAuthentication', true)
               this.loginSuccessAlarm()
-              this.$router.push('/test')
+              this.$router.push('/inspire')
             })
           )
           .catch(() => {
