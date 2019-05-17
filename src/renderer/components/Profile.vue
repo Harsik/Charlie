@@ -1,9 +1,27 @@
 <template>
-  <v-layout align-start justify-center>
-    <v-flex xs12 sm6>
+  <v-container fluid grid-list-md>
+  <v-layout align-start justify-center row wrap>
+    <v-flex xs12 sm6 md4>
       <v-card class='pa-3'>
         <div class='headline'>
-          <v-layout align-center justify-start>{{ headerText }}</v-layout>
+          <v-layout align-center justify-start>{{ avatarText }}</v-layout>
+          <v-divider></v-divider>
+          <v-layout class='pa-3' align-center justify-center>
+          <v-avatar
+          :tile='true'
+          :size="100"
+          color="grey lighten-4"
+          >
+          <img src="https://vuetifyjs.com/apple-touch-icon-180x180.png" alt="avatar">
+        </v-avatar>
+        </v-layout>
+        </div>
+      </v-card>
+    </v-flex>
+    <v-flex xs12 sm6 md4>
+      <v-card class='pa-3'>
+        <div class='headline'>
+          <v-layout align-center justify-start>{{ profileText }}</v-layout>
           <v-divider></v-divider>
         </div>
         <v-form class='pa-3' ref='form' v-model='valid' lazy-validation>
@@ -12,11 +30,12 @@
           <v-text-field label='Bio' v-model='profile.bio'></v-text-field>
           <v-text-field label='Company' v-model='profile.company'></v-text-field>
           <v-text-field label='Address' v-model='profile.address'></v-text-field>
-          <v-btn color='primary' :disabled='!valid'>Edit</v-btn>
+          <v-btn color='primary' :disabled='!valid' @click='editProfile'>Edit</v-btn>
         </v-form>
       </v-card>
     </v-flex>
   </v-layout>
+  </v-container>
 </template>
 
 <script>
@@ -24,34 +43,62 @@ export default {
   props: ['isAuthenticated'],
   name: 'Profile',
   data: () => ({
-    headerText: 'Profile',
+    profileText: 'Profile',
+    avatarText: 'Avatar',
     profile: {
       email: localStorage.email,
       name: null,
       bio: null,
       company: null,
       address: null
-    },
-    valid: true,
-    emailRules: [
-      v => !!v || 'Email is required',
-      v =>
-        /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(v) ||
-        'Email must be valid'
-    ],
-    passwordRules: [
-      v => !!v || 'Password is required',
-      v => (v && v.length >= 8) || 'Password must be 8 characters at least'
-    ]
+    }
   }),
   mounted () {
     this.loadProfile()
   },
   methods: {
+    editProfile () {
+      const headers = new Headers({
+        'Content-Type': 'application/json'
+      })
+
+      if (localStorage.accessToken) {
+        headers.append('Authorization', 'Bearer ' + localStorage.accessToken)
+      }
+
+      fetch('http://localhost:8080/api/account/profile/edit', {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify({
+          email: this.profile.email,
+          name: this.profile.name,
+          bio: this.profile.bio,
+          company: this.profile.company,
+          address: this.profile.address
+        })
+      })
+        .then((
+          response
+        ) =>
+          response.json().then(json => {
+            if (!response.ok) {
+              return Promise.reject(json)
+            }
+            this.loadProfile()
+          })
+        )
+        .catch(() => {
+        })
+    },
     loadProfile () {
       const headers = new Headers({
         'Content-Type': 'application/json'
       })
+
+      if (localStorage.accessToken) {
+        headers.append('Authorization', 'Bearer ' + localStorage.accessToken)
+      }
+
       fetch('http://localhost:8080/api/account/profile', {
         method: 'POST',
         headers: headers,
@@ -61,34 +108,21 @@ export default {
         })
       })
         .then((
-          response // response.ok 값을 남기기 위해 respoense.json().then으로 다시 출력
+          response
         ) =>
           response.json().then(json => {
             if (!response.ok) {
               return Promise.reject(json)
             }
-            // localStorage.accessToken = json.accessToken
-            // this.$emit('sendAuthentication', true)
-            // this.signupSuccessAlarm()
             this.profile = json
-            this.$router.push('/login')
           })
         )
         .catch(() => {
-          // this.signupFailAlarm()
-          // console.log(error)
+          // errorAlarm()
         })
     },
-    signupSuccessAlarm () {
-      const set = { color: 'success', text: 'Signup Successful' }
-      this.$emit('setSnackbar', set)
-    },
-    signupFailAlarm () {
-      const set = { color: 'error', text: 'Signup Fail' }
-      this.$emit('setSnackbar', set)
-    },
-    emaillNotAbleAlarm () {
-      const set = { color: 'error', text: 'Email is already taken' }
+    errorAlarm () {
+      const set = { color: 'error', text: 'Server error' }
       this.$emit('setSnackbar', set)
     }
   }

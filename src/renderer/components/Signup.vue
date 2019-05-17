@@ -1,40 +1,48 @@
 <template>
   <v-layout align-start justify-center>
     <v-flex xs12 sm6>
-      <v-card class="pa-3">
-        <div class="pa-3">
-  <v-layout align-center justify-center>
-      <v-icon x-large>perm_identity</v-icon>
-      <v-spacer></v-spacer>
-  <v-layout align-center justify-start>
-      {{ headerText }}
-  </v-layout>
-  </v-layout>
-  <v-divider inset></v-divider>
-  </div>
-      <v-form class="pa-3" ref='form' v-model='valid' lazy-validation>
-        <v-text-field
-          class="pa-3"
-          label='Email'
-          v-model='email'
-          :rules='emailRules'
-          :error-messages="errors"
-          clearable
-        ></v-text-field>
-        <v-text-field
-          class="pa-3"
-          label='Password'
-          v-model='password'
-          :rules='passwordRules'
-          type='password'
-          hint='At least 8 characters'
-          @keyup.enter='login'
-          clearable
-        ></v-text-field>
-        <v-btn color='primary' :disabled='!valid' @click='signup'>
-          <v-icon left>assignment_ind</v-icon>Sign up {{ this.emailAvailable }}
-        </v-btn>
-      </v-form>
+      <v-card class='pa-3'>
+        <div class='pa-3'>
+          <v-layout align-center justify-center>
+            <v-icon x-large>perm_identity</v-icon>
+            <v-spacer></v-spacer>
+            <v-layout align-center justify-start>{{ headerText }}</v-layout>
+          </v-layout>
+          <v-divider inset></v-divider>
+        </div>
+        <v-form class='pa-3' ref='form' v-model='valid' lazy-validation>
+    <!-- <v-checkbox v-model="custom" label="Custom progress bar"></v-checkbox> -->
+          <v-text-field
+            class='pa-3'
+            label='Email'
+            v-model='email'
+            :rules='emailRules'
+            :error-messages='errors'
+            clearable
+          >
+          <!-- <template v-slot:progress>
+        <v-progress-linear
+          v-if="custom"
+          :value="progress"
+          :color="color"
+          height="7"
+        ></v-progress-linear>
+      </template> -->
+          </v-text-field>
+          <v-text-field
+            class='pa-3'
+            label='Password'
+            v-model='password'
+            :rules='passwordRules'
+            type='password'
+            hint='At least 8 characters'
+            @keyup.enter='login'
+            clearable
+          ></v-text-field>
+          <v-btn color='primary' :disabled='!valid' @click='signup'>
+            <v-icon left>assignment_ind</v-icon>Sign up {{ this.custom }}
+          </v-btn>
+        </v-form>
       </v-card>
     </v-flex>
   </v-layout>
@@ -47,36 +55,44 @@ export default {
   props: ['isAuthenticated'],
   name: 'Signup',
   data: () => ({
+    // value: '',
+    // custom: true,
     headerText: 'This is Signup Page',
     emailAvailable: false,
+    loading: true,
     valid: true,
-    email: null,
+    email: '',
     errors: [],
     password: null,
     emailRules: [
       v => !!v || 'Email is required',
       v =>
         /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(v) ||
-        'Email must be valid',
-      v => (this.emailAvailable ? true : 'Email is already taken') // 왜인지 모르겠지만 항상 false값으로 해당되는 뒷값만 리턴함 내 생각엔 동적으로 값이 적용되지 않는 것 같다.
+        'Email must be valid'
     ],
     passwordRules: [
       v => !!v || 'Password is required',
       v => (v && v.length >= 8) || 'Password must be 8 characters at least'
     ]
   }),
-  // watch: {
-  //   input (val) {
-  //       axios.get('/check?value=' + val).then(valid => {
-  //         this.errors = valid ? [] : ['async error']
-  //       })
-  //   }
-  // },
+  watch: {
+    email: function () {
+      this.vertifyEmail()
+    }
+  },
+  computed: {
+    // progress () {
+    //   return Math.min(100, this.value.length * 10)
+    // },
+    // color () {
+    //   return ['error', 'warning', 'success'][Math.floor(this.progress / 40)]
+    // }
+  },
   methods: {
-    vertifyEmail: _.debounce(function (email) {
+    vertifyEmail: _.debounce(function () {
       fetch(
         'http://localhost:8080/api/account/checkEmailAvailability?email=' +
-          email,
+          this.email,
         {
           method: 'GET'
         }
@@ -89,15 +105,15 @@ export default {
               return Promise.reject(json)
             }
             this.emailAvailable = json.available
-            // if (json.available) {
-            // } else {
-            //   this.emaillNotAbleAlarm()
-            // }
-            return json.available
+            if (json.available) {
+              this.errors = []
+            } else {
+              this.errors = ['Email is already taken']
+            }
           })
         )
         .catch(() => false)
-    }, 1000),
+    }, 300),
     // vertifyEmail (email) {
     //   fetch(
     //     'http://localhost:8080/api/account/checkEmailAvailability?email=' + email,
