@@ -9,12 +9,14 @@
           <v-layout class='pa-3' align-center justify-center>
           <v-avatar
           :tile='true'
-          :size="100"
+          :size="300"
           color="grey lighten-4"
           >
-          <img src="https://vuetifyjs.com/apple-touch-icon-180x180.png" alt="avatar">
-        </v-avatar>
+          <img :src='imageUrl' alt="avatar">
+          </v-avatar>
         </v-layout>
+        <v-btn raised class='primary' @click="onPickFile">Upload</v-btn>
+        <input type='file' style='display: none;' ref='fileInput' accept='image/*' @change="onFilePicked">
         </div>
       </v-card>
     </v-flex>
@@ -25,7 +27,7 @@
           <v-divider></v-divider>
         </div>
         <v-form class='pa-3' ref='form' v-model='valid' lazy-validation>
-          <v-text-field label='Email' v-model='profile.email' :disabled='true'></v-text-field>
+          <v-text-field label='Email' v-model='email' :disabled='true'></v-text-field>
           <v-text-field label='Name' v-model='profile.name'></v-text-field>
           <v-text-field label='Bio' v-model='profile.bio'></v-text-field>
           <v-text-field label='Company' v-model='profile.company'></v-text-field>
@@ -43,10 +45,12 @@ export default {
   props: ['isAuthenticated'],
   name: 'Profile',
   data: () => ({
+    imageUrl: '',
+    valid: true,
     profileText: 'Profile',
     avatarText: 'Avatar',
+    email: localStorage.email,
     profile: {
-      email: localStorage.email,
       name: null,
       bio: null,
       company: null,
@@ -57,6 +61,54 @@ export default {
     this.loadProfile()
   },
   methods: {
+    uploadAvatar (files) {
+      const headers = new Headers({
+        'Content-Type': 'multipart/form-data'
+      })
+
+      if (localStorage.accessToken) {
+        headers.append('Authorization', 'Bearer ' + localStorage.accessToken)
+      }
+
+      fetch('http://localhost:8080/api/file/uploadAvatar', {
+        method: 'POST',
+        // headers: headers,
+        body: JSON.stringify({
+          file: files,
+          email: this.email
+        })
+      })
+        .then((
+          response
+        ) =>
+          response.json().then(json => {
+            if (!response.ok) {
+              return Promise.reject(json)
+            }
+            this.loadProfile()
+          })
+        )
+        .catch(() => {
+        })
+    },
+    onFilePicked (event) {
+      const files = event.target.files // file info load
+      let filename = files[0].name
+      if (filename.lastIndexOf('.') <= 0) { // filename 유효성 검사
+        return alert('Please pick valid file')
+      }
+      const fileReader = new FileReader()
+      fileReader.addEventListener('load', () => {
+        this.imageUrl = fileReader.result
+      })
+      fileReader.readAsDataURL(files[0])
+      console.log(files[0])
+      this.uploadAvatar(files[0])
+    },
+    onPickFile () {
+      this.$refs.fileInput.click()
+    },
+    uploadFile () {},
     editProfile () {
       const headers = new Headers({
         'Content-Type': 'application/json'
@@ -70,7 +122,7 @@ export default {
         method: 'POST',
         headers: headers,
         body: JSON.stringify({
-          email: this.profile.email,
+          email: this.email,
           name: this.profile.name,
           bio: this.profile.bio,
           company: this.profile.company,
