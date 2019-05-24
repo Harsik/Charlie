@@ -9,14 +9,6 @@ export default new Router({
     name: 'Profile',
     component: require('@/components/profile').default
   }, {
-    path: '/test',
-    name: 'test',
-    component: require('@/components/test').default
-  }, {
-    path: '/testFile',
-    name: 'testFile',
-    component: require('@/components/testFile').default
-  }, {
     path: '/login',
     name: 'Login',
     component: require('@/components/login').default
@@ -37,7 +29,23 @@ export default new Router({
     name: 'inspire',
     component: require('@/components/InspireView').default
   }, {
+    path: '/fileList',
+    name: 'fileList',
+    component: require('@/components/FileList').default
+  }, {
     path: '*',
     redirect: '/'
   }]
 })
+// router.beforeEach((to, from, next) => {
+//   // redirect to login page if not logged in and trying to access a restricted page
+//   const publicPages = ['/login'];
+//   const authRequired = !publicPages.includes(to.path);
+//   const loggedIn = localStorage.getItem('user');
+
+//   if (authRequired && !loggedIn) {
+//     return next('/login');
+//   }
+
+//   next();
+// })

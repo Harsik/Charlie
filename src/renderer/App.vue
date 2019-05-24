@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <v-app>
+    <v-app v-model='app'>
       <v-navigation-drawer
         fixed
         v-model="drawer"
@@ -23,7 +23,7 @@
         </v-list>
       </v-navigation-drawer>
       <v-toolbar fixed app :clipped-left="clipped">
-        <v-toolbar-side-icon @click.native.stop="drawer = !drawer"></v-toolbar-side-icon>
+        <v-toolbar-side-icon @click.native.stop="drawer = !drawer" :disabled='sideicon'></v-toolbar-side-icon>
         <v-toolbar-title v-text="appTitle" @click='openWelcome'></v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items v-if='!isAuthenticated'>
@@ -75,6 +75,8 @@
     // props: ['currentUser'],
     name: 'Charlie',
     data: () => ({
+      sideicon: false, // !isAuthenticated
+      app: false,
       appTitle: 'AppTitle',
       isAuthenticated: false,
       currentUser: false,
@@ -84,7 +86,7 @@
       navMenus: [
         { icon: 'apps', title: 'Welcome', to: '/' },
         { icon: 'bubble_chart', title: 'Inspire', to: '/inspire' },
-        { icon: 'title', title: 'test', to: '/test' }
+        { icon: 'title', title: 'FileList', to: '/fileList' }
       ],
       subMenus: [
         { title: 'Profile', to: '/profile' },
@@ -92,6 +94,9 @@
         { title: 'Logout', to: '/logout' }
       ]
     }),
+    mounted () {
+      this.app = true
+    },
     methods: {
       getAuthentication (bool) {
         this.isAuthenticated = bool

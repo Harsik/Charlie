@@ -11,7 +11,6 @@
           <v-divider inset></v-divider>
         </div>
         <v-form class='pa-3' ref='form' v-model='valid' lazy-validation>
-    <!-- <v-checkbox v-model="custom" label="Custom progress bar"></v-checkbox> -->
           <v-text-field
             class='pa-3'
             label='Email'
@@ -19,15 +18,8 @@
             :rules='emailRules'
             :error-messages='errors'
             clearable
+            :loading='loadingProgress'
           >
-          <!-- <template v-slot:progress>
-        <v-progress-linear
-          v-if="custom"
-          :value="progress"
-          :color="color"
-          height="7"
-        ></v-progress-linear>
-      </template> -->
           </v-text-field>
           <v-text-field
             class='pa-3'
@@ -40,7 +32,7 @@
             clearable
           ></v-text-field>
           <v-btn color='primary' :disabled='!valid' @click='signup'>
-            <v-icon left>assignment_ind</v-icon>Sign up {{ this.custom }}
+            <v-icon left>assignment_ind</v-icon>Sign up
           </v-btn>
         </v-form>
       </v-card>
@@ -56,7 +48,8 @@ export default {
   name: 'Signup',
   data: () => ({
     // value: '',
-    // custom: true,
+    loadingProgress: false,
+    custom: true,
     headerText: 'This is Signup Page',
     emailAvailable: false,
     loading: true,
@@ -90,6 +83,7 @@ export default {
   },
   methods: {
     vertifyEmail: _.debounce(function () {
+      this.loadingProgress = true
       fetch(
         'http://localhost:8080/api/account/checkEmailAvailability?email=' +
           this.email,
@@ -110,9 +104,13 @@ export default {
             } else {
               this.errors = ['Email is already taken']
             }
+            this.loadingProgress = false
           })
         )
-        .catch(() => false)
+        .catch(() => {
+          this.loadingProgress = false
+        }
+        )
     }, 300),
     // vertifyEmail (email) {
     //   fetch(

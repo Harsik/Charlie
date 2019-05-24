@@ -25,8 +25,12 @@
           clearable
         ></v-text-field>
         <v-btn color='primary' :disabled='!valid' @click='login'>
-          <v-icon left>power_settings_new</v-icon>Login
+          <v-icon left>power_settings_new</v-icon> {{ loginText }}
         </v-btn>
+            <v-progress-circular
+              v-if="loadingProgress"
+              indeterminate
+            ></v-progress-circular>
       </v-form>
       </v-card>
     </v-flex>
@@ -38,7 +42,9 @@ export default {
   props: ['isAuthenticated'],
   name: 'Login',
   data: () => ({
-    headerText: '\nThis is Login Page',
+    loadingProgress: false,
+    loginText: 'Login',
+    headerText: 'This is Login Page',
     valid: true,
     email: null,
     password: null,
@@ -66,6 +72,7 @@ export default {
       this.$emit('setSnackbar', set)
     },
     login () {
+      this.loadingProgress = true
       if (this.$refs.form.validate()) {
         localStorage.email = this.email
         // localStorage.password = this.password
@@ -88,6 +95,7 @@ export default {
               if (!response.ok) {
                 return Promise.reject(json)
               }
+              this.loadingProgress = false
               localStorage.accessToken = json.accessToken
               this.$emit('sendAuthentication', true)
               this.loginSuccessAlarm()
@@ -96,9 +104,11 @@ export default {
           )
           .catch(() => {
             this.loginFailAlarm()
+            this.loadingProgress = false
             // console.log(error)
           })
       }
+      // this.loadingProgress = false // 폼이 새로고침됨 이유는 모름 그래서 자동으로 false처리됨
     }
   }
 }
