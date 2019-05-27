@@ -7,12 +7,9 @@
       <v-card class='pa-3'>
         <v-data-table :headers='headers' :items='files' class='elevation-1'>
           <template v-slot:items='props'>
-            <td>{{ props.item.name }}</td>
-            <td class='text-xs-right'>{{ props.item.name }}</td>
-            <td class='text-xs-right'>{{ props.item.downloadUri }}</td>
-            <td class='text-xs-right'>{{ props.item.type }}</td>
-            <td class='text-xs-right'>{{ props.item.created_at }}</td>
-            <td class='text-xs-right'>{{ props.item.updated_at }}</td>
+            <td><a v-bind:href="props.item.downloadUri">{{ props.item.name }}</a></td>
+            <td>{{ props.item.type }}</td>
+            <td>{{ props.item.size }}</td>
           </template>
         </v-data-table>
         <v-btn raised class='primary' @click='onPickFile'>Upload</v-btn>
@@ -20,7 +17,7 @@
           type='file'
           style='display: none'
           ref='fileInput'
-          accept='image/*'
+          accept='*'
           @change='onFilePicked'
         >
       </v-card>
@@ -36,14 +33,11 @@ export default {
       {
         text: 'FileName',
         align: 'left',
-        sortable: false,
+        sortable: true,
         value: 'name'
       },
-      { text: 'DownloadUri', value: 'downloadUri' },
       { text: 'Type', value: 'type' },
-      { text: 'Size', value: 'size' },
-      { text: 'Created', value: 'createdAt' },
-      { text: 'Updated', value: 'updatedAt' }
+      { text: 'Size', value: 'size' }
     ],
     files: []
   }),
@@ -68,7 +62,7 @@ export default {
         body: data
       })
         .then(response => {
-          // this.loadAvatar()
+          this.loadFiles()
         })
         .catch(error => {
           console.log(error)
@@ -106,14 +100,12 @@ export default {
             if (!response.ok) {
               return Promise.reject(json)
             }
-            console.log(json[0])
-            console.log(json[0].createdAt)
-            console.log(json[0].updatedAt)
             this.files = json
           })
         )
         .catch(error => {
           console.log(error)
+          this.errorAlarm()
         })
     },
     errorAlarm () {

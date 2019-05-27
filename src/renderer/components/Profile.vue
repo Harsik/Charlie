@@ -160,7 +160,9 @@ export default {
             this.loadProfile()
           })
         )
-        .catch(() => {})
+        .catch(() => {
+          this.errorAlarm()
+        })
     },
     loadProfile () {
       const headers = new Headers({
@@ -186,7 +188,7 @@ export default {
           })
         )
         .catch(() => {
-          // errorAlarm()
+          this.errorAlarm()
         })
     },
     errorAlarm () {
