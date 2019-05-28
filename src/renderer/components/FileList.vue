@@ -1,25 +1,66 @@
 <template>
   <v-layout align-start justify-center row wrap>
     <v-flex xs12 sm12 md12>
-      <v-toolbar flat color='white'>
+      <v-toolbar flat color="white">
         <v-toolbar-title>FileList</v-toolbar-title>
       </v-toolbar>
-      <v-card class='pa-3'>
-        <v-data-table :headers='headers' :items='files' class='elevation-1'>
-          <template v-slot:items='props'>
-            <td><a v-bind:href="props.item.downloadUri">{{ props.item.name }}</a></td>
+      <v-card class="pa-3">
+        <v-card-title>
+          <v-spacer></v-spacer>
+          <v-text-field
+            v-model="search"
+            append-icon="search"
+            label="Search"
+            single-line
+            hide-details
+          ></v-text-field>
+        </v-card-title>
+        <v-data-table
+          v-model="selected"
+          :headers="headers"
+          :items="files"
+          :search="search"
+          item-key="name"
+          select-all
+          class="elevation-1"
+        >
+          <!-- hide-actions
+          :pagination.sync="pagination"-->
+          <v-progress-linear v-slot:progress color="blue" indeterminate></v-progress-linear>
+          <template v-slot:items="props">
+            <td>
+              <v-checkbox v-model="props.selected" primary hide-details></v-checkbox>
+            </td>
+            <td>
+              <a v-bind:href="props.item.downloadUri">{{ props.item.name }}</a>
+            </td>
             <td>{{ props.item.type }}</td>
             <td>{{ props.item.size }}</td>
+            <td>{{ props.item.updatedAt }}</td>
+            <td class="align-center justify-start layout px-0">
+              <v-icon small @click="deleteFile(props.item.name)">delete</v-icon>
+            </td>
           </template>
+          <!-- <template v-slot:no-results>
+        <v-alert :value="true" color="error" icon="warning">
+          Your search for "{{ search }}" found no results.
+        </v-alert>
+          </template>-->
         </v-data-table>
-        <v-btn raised class='primary' @click='onPickFile'>Upload</v-btn>
+        <!-- <div class='text-xs-center pt-2'>
+          <v-pagination v-model='pagination.page' :length='pages'></v-pagination>
+        </div>-->
+        <v-btn raised class="primary" @click="onPickFile">Upload</v-btn>
         <input
-          type='file'
-          style='display: none'
-          ref='fileInput'
-          accept='*'
-          @change='onFilePicked'
+          type="file"
+          style="display: none"
+          ref="fileInput"
+          accept="*"
+          @change="onFilePicked"
+          multiple
+          required
         >
+        <v-btn raised class="primary" @click="downloadFiles">Download</v-btn>
       </v-card>
     </v-flex>
   </v-layout>
@@ -29,28 +70,133 @@
 export default {
   name: 'FileList',
   data: () => ({
+    loading: false,
+    search: '',
+    pagination: {
+      // descending: true,
+      // page: 1,
+      // rowsPerPage: 4,
+      // totalItems: 0,
+      // rowsPerPageItems: [1, 2, 4, 8, 16],
+      sortBy: 'updatedAt'
+    },
+    selected: [],
+    files: [],
     headers: [
       {
         text: 'FileName',
         align: 'left',
-        sortable: true,
+        sortable: false,
         value: 'name'
       },
       { text: 'Type', value: 'type' },
-      { text: 'Size', value: 'size' }
-    ],
-    files: []
+      { text: 'Size', value: 'size' },
+      {text: 'UpdatedAt', value: 'updatedAt'},
+      {text: '', value: ''}
+    ]
   }),
+  // beforeCreate () {
+  //   this.loadFiles()
+  // },
+  // create () {
+  //   this.loadFiles()
+  // },
   mounted () {
     this.loadFiles()
   },
+  // watch: {
+  //   pages () {
+  //     // console.log(this.pagination)
+  //     if (
+  //       this.pagination.rowsPerPage == null ||
+  //       this.pagination.totalItems == null
+  //     ) { return 0 }
+  //     return Math.ceil(
+  //       this.pagination.totalItems / this.pagination.rowsPerPage
+  //     )
+  //   }
+  // },
+  computed: {
+    pages () {
+      // console.log(this.pagination)
+      if (
+        this.pagination.rowsPerPage == null ||
+        this.pagination.totalItems == null
+      ) { return 0 }
+      return Math.ceil(
+        this.pagination.totalItems / this.pagination.rowsPerPage
+      )
+    }
+  },
   methods: {
-    uploadFile (file) {
-      let data = new FormData()
-      data.append('file', file)
-      // data.append('email', this.email)
+    downloadFiles () {
+      let fileNames = []
+      // let fileNames = { 'fileNames': {} }
+      // this.selected.forEach(function (value, key) {
+      //   fileNames.fileNames.push(value.name)
+      // })
+      this.selected.forEach(function (value, key) {
+        fileNames.push('fileNames', value.name)
+      })
       const headers = new Headers({
-        'Content-Type': 'multipart/form-data'
+        'Content-Type': 'application/json'
+      })
+
+      if (localStorage.accessToken) {
+        headers.append('Authorization', 'Bearer ' + localStorage.accessToken)
+      }
+      fetch('http://localhost:8080/api/file/downloadMultipleFiles', {
+        method: 'POST',
+        headers: headers,
+        body: fileNames
+      })
+        .then((
+          response // response.ok 값을 남기기 위해 respoense.json().then으로 다시 출력
+        ) =>
+          response.json().then(json => {
+            if (!response.ok) {
+              return Promise.reject(json)
+            }
+            console.log(json)
+            this.loadFiles()
+          })
+        )
+        .catch(error => {
+          console.log(error)
+          this.errorAlarm()
+        })
+    },
+    deleteFile (fileName) {
+      const headers = new Headers({
+        'Content-Type': 'application/json'
+      })
+      if (localStorage.accessToken) {
+        headers.append('Authorization', 'Bearer ' + localStorage.accessToken)
+      }
+      fetch('http://localhost:8080/api/file/deleteFile?fileName=' + fileName, {
+        method: 'GET',
+        headers: headers
+      })
+        .then((
+          response // response.ok 값을 남기기 위해 respoense.json().then으로 다시 출력
+        ) =>
+          response.json().then(json => {
+            if (!response.ok) {
+              return Promise.reject(json)
+            }
+            this.loadFiles()
+          })
+        )
+        .catch((error) => {
+          console.log(error)
+          this.errorAlarm()
+        })
+    },
+    uploadFile (file) {
+      let formData = new FormData()
+      formData.append('file', file)
+      const headers = new Headers({
+        // 'Content-Type': 'multipart/form-data'
       })
 
       if (localStorage.accessToken) {
@@ -58,21 +204,46 @@ export default {
       }
       fetch('http://localhost:8080/api/file/uploadFile', {
         method: 'POST',
-        // headers: headers,
-        body: data
+        headers: headers,
+        body: formData
       })
         .then(response => {
           this.loadFiles()
         })
         .catch(error => {
           console.log(error)
+          this.errorAlarm()
+        })
+    },
+    uploadFiles (files) {
+      let formData = new FormData()
+      for (var index = 0; index < files.length; index++) {
+        formData.append('files', files[index])
+      }
+      const headers = new Headers({
+        // 'Content-Type': 'multipart/form-data'
+      })
+
+      if (localStorage.accessToken) {
+        headers.append('Authorization', 'Bearer ' + localStorage.accessToken)
+      }
+      fetch('http://localhost:8080/api/file/uploadMultipleFiles', {
+        method: 'POST',
+        headers: headers,
+        body: formData
+      })
+        .then(response => {
+          this.loadFiles()
+        })
+        .catch(error => {
+          console.log(error)
+          this.errorAlarm()
         })
     },
     onFilePicked (event) {
       const files = event.target.files // file info load
       let filename = files[0].name
       if (filename.lastIndexOf('.') <= 0) {
-        // filename 유효성 검사
         return alert('Please pick valid file')
       }
       const fileReader = new FileReader()
@@ -80,7 +251,8 @@ export default {
         this.imageUrl = fileReader.result
       })
       fileReader.readAsDataURL(files[0])
-      this.uploadFile(files[0])
+      // this.uploadFile(files[0])
+      this.uploadFiles(files)
     },
     onPickFile () {
       this.$refs.fileInput.click()
@@ -89,6 +261,9 @@ export default {
       const headers = new Headers({
         'Content-Type': 'application/json'
       })
+      if (localStorage.accessToken) {
+        headers.append('Authorization', 'Bearer ' + localStorage.accessToken)
+      }
       fetch('http://localhost:8080/api/file/loadFiles', {
         method: 'POST',
         headers: headers

@@ -89,9 +89,9 @@ export default {
         })
     },
     uploadAvatar (file) {
-      let data = new FormData()
-      data.append('file', file)
-      data.append('email', this.email)
+      let formData = new FormData()
+      formData.append('file', file)
+      formData.append('email', this.email)
       // data.append('email', this.email)
       const headers = new Headers({
         'Content-Type': 'multipart/form-data'
@@ -105,7 +105,7 @@ export default {
         // fetch('http://localhost:8080/api/file/uploadFile', {
         method: 'POST',
         // headers: headers,
-        body: data
+        body: formData
       })
         .then(response => {
           this.loadAvatar()

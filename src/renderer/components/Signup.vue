@@ -112,26 +112,6 @@ export default {
         }
         )
     }, 300),
-    // vertifyEmail (email) {
-    //   fetch(
-    //     'http://localhost:8080/api/account/checkEmailAvailability?email=' + email,
-    //     {
-    //       method: 'GET'
-    //     }
-    //   )
-    //     .then((
-    //       response // response.ok 값을 남기기 위해 respoense.json().then으로 다시 출력
-    //     ) =>
-    //       response.json().then(json => {
-    //         if (!response.ok) {
-    //           return Promise.reject(json)
-    //         }
-    //         console.log(json.available)
-    //         return json.available
-    //       })
-    //     )
-    //     .catch(() => {})
-    // },
     signupSuccessAlarm () {
       const set = { color: 'success', text: 'Signup Successful' }
       this.$emit('setSnackbar', set)
