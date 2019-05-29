@@ -32,7 +32,7 @@
               <v-checkbox v-model='props.selected' primary hide-details></v-checkbox>
             </td>
             <td>
-              <a v-bind:href='props.item.downloadUri'>{{ props.item.name }}</a>
+              <a v-bind:href='props.item.downloadUri' download>{{ props.item.name }}</a>
             </td>
             <td>{{ props.item.type }}</td>
             <td>{{ props.item.size }}</td>
@@ -60,14 +60,15 @@
           multiple
           required
         >
-        <v-btn raised class='primary' @click='downloadFiles'>Download</v-btn>
+        <v-btn raised class='primary' @click='ondownloadFile'>Download</v-btn>
       </v-card>
     </v-flex>
   </v-layout>
 </template>
 
 <script>
-
+const request = require('request')
+const fs = require('fs')
 export default {
   name: 'FileList',
   data: () => ({
@@ -113,11 +114,53 @@ export default {
     }
   },
   methods: {
-    downloadFiles () {
+    showProgress (received, total) {
+      const percentage = (received * 100) / total
+      console.log(
+        percentage + '% | ' + received + ' bytes out of ' + total + ' bytes.'
+      )
+    },
+    downloadFile (fileUrl, targetPath) {
+      // Save variable to know progress
+      let receivedBytes = 0
+      let totalBytes = 0
+
+      const req = request({
+        method: 'GET',
+        uri: fileUrl
+      })
+
+      const out = fs.createWriteStream(targetPath)
+      req.pipe(out)
+
+      req.on('response', function (data) {
+        // Change the total bytes value to get progress later.
+        totalBytes = parseInt(data.headers['content-length'])
+      })
+
+      req.on('data', function (chunk) {
+        // Update the received bytes
+        receivedBytes += chunk.length
+
+        this.showProgress(receivedBytes, totalBytes)
+      })
+
+      req.on('end', function () {
+        alert('File succesfully downloaded')
+      })
+    },
+    ondownloadFiles () {
       this.selected.forEach(function (value, key) {
         console.log(value)
-        // this.downloadFile(value.name)
+        this.downloadFile(value.name)
       })
+    },
+    ondownloadFile (fileName) {
+      fileName = this.selected[0].name
+      const url =
+        'http://localhost:8080/api/file/deleteFile?fileName=' + fileName
+      const dir = '/downloads/' + fileName
+      this.downloadFile(url, dir)
     },
     deleteFile (fileName) {
       const headers = new Headers({
@@ -170,7 +213,7 @@ export default {
     },
     uploadFiles (files) {
       let formData = new FormData()
-      // for (var index = 0; index < files.length; index++) {
+      // for (var index = 0 index < files.length index++) {
       //   formData.append('files', files[index])
       // }
       // files.forEach(function (value, key) {  //not function
