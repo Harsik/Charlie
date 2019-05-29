@@ -60,16 +60,13 @@
           multiple
           required
         >
-        <v-btn raised class='primary' @click='downloadFile'>Download</v-btn>
+        <v-btn raised class='primary' @click='downloadFiles'>Download</v-btn>
       </v-card>
     </v-flex>
   </v-layout>
 </template>
 
 <script>
-// import http from 'http'
-// import fs from 'fs'
-// import path from 'path'
 
 export default {
   name: 'FileList',
@@ -119,48 +116,8 @@ export default {
     downloadFiles () {
       this.selected.forEach(function (value, key) {
         console.log(value)
-        console.log(value.name)
-        this.downloadFile(value.name)
+        // this.downloadFile(value.name)
       })
-    },
-    downloadFile () {
-      let fileName = this.selected[0].name
-      const headers = new Headers({
-        // 'Content-Type': 'application/json'
-      })
-
-      if (localStorage.accessToken) {
-        headers.append('Authorization', 'Bearer ' + localStorage.accessToken)
-      }
-      fetch('http://localhost:8080/api/file/downloadFile/' + fileName, {
-        method: 'GET',
-        headers: headers
-      })
-        .then(response => {
-          const reader = response.body.getReader()
-          return new ReadableStream({
-            start (controller) {
-              return pump()
-              function pump () {
-                return reader.read().then(({ done, value }) => {
-                  // When no more data needs to be consumed, close the stream
-                  if (done) {
-                    controller.close()
-                    return
-                  }
-                  // Enqueue the next data chunk into our target stream
-                  controller.enqueue(value)
-                  return pump()
-                })
-              }
-            }
-          })
-        })
-        .then(stream => new Response(stream))
-        .then(response => response.blob())
-        .then(blob => URL.createObjectURL(blob))
-        .then(url => console.log(url))
-        .catch(err => console.error(err))
     },
     deleteFile (fileName) {
       const headers = new Headers({
