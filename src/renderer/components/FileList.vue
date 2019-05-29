@@ -99,12 +99,6 @@ export default {
       { text: '', value: '' }
     ]
   }),
-  // beforeCreate () {
-  //   this.loadFiles()
-  // },
-  // create () {
-  //   this.loadFiles()
-  // },
   mounted () {
     this.loadFiles()
   },
@@ -138,106 +132,35 @@ export default {
       if (localStorage.accessToken) {
         headers.append('Authorization', 'Bearer ' + localStorage.accessToken)
       }
-      // const file = fs.createWriteStream(fileName)
-      // console.log(file)
-      // const request = http.get(
-      //   'http://localhost:8080/api/file/downloadFile/' + fileName,
-      //   function (response) {
-      //     response.pipe(file)
-      //     console.log(response)
-      //   }
-      // )
-      // console.log(request)
       fetch('http://localhost:8080/api/file/downloadFile/' + fileName, {
         method: 'GET',
         headers: headers
-      }).then(response => {
-      const reader = response.body.getReader()
-        return new ReadableStream({
-      start(controller) {
-        return pump()
-      function pump() {
-        return reader.read().then(({ done, value }) => {
-          // When no more data needs to be consumed, close the stream
-          if (done) {
-              controller.close()
-              return
-          }
-          // Enqueue the next data chunk into our target stream
-          controller.enqueue(value)
-          return pump()
+      })
+        .then(response => {
+          const reader = response.body.getReader()
+          return new ReadableStream({
+            start (controller) {
+              return pump()
+              function pump () {
+                return reader.read().then(({ done, value }) => {
+                  // When no more data needs to be consumed, close the stream
+                  if (done) {
+                    controller.close()
+                    return
+                  }
+                  // Enqueue the next data chunk into our target stream
+                  controller.enqueue(value)
+                  return pump()
+                })
+              }
+            }
+          })
         })
-      }
-    }  
-  })
-})
-.then(stream => new Response(stream))
-.then(response => response.blob())
-.then(blob => URL.createObjectURL(blob))
-.then(url => console.log(image.src = url))
-.catch(err => console.error(err))
-console.log(pump())
-        // .then(response => {
-        //   let appPath = path.join(this.$electron.remote.app.getPath('appData'), 'elecapp', fileName)
-        //   const reader = response.body.getReader()
-        //   const stream = new ReadableStream({
-        //     start (controller) {
-        //       // The following function handles each data chunk
-        //       function push () {
-        //         // 'done' is a Boolean and value a 'Uint8Array'
-        //         reader.read().then(({ done, value }) => {
-        //           // Is there no more data to read?
-        //           if (done) {
-        //             // Tell the browser that we have finished sending data
-        //             controller.close()
-        //             return
-        //           }
-        //           fs.writeFile(appPath, value, (err) => {
-        //             if (err) return null
-        //           })
-        //           fs.createWriteStream(fileName)
-
-        //           // Get the data and send it to the browser via the controller
-        //           controller.enqueue(value)
-        //           push()
-        //         })
-        //       }
-
-        //       push()
-        //     }
-        //   })
-        //   return new Response(stream, {
-        //     headers: { 'Content-Type': 'text/html' }
-        //   })
-        //   // let appPath = path.join(this.$electron.remote.app.getPath('appData'), 'elecapp', fileName)
-        //   // console.log(response.body)
-        //   // fs.writeFile(appPath, response.body, (err) => {
-        //   //   if (err) return null
-        //   // })
-        //   // fs.createWriteStream(fileName)
-
-        //   // const responseToReadable = response => {
-        //   // const reader = response.body.getReader()
-        //   // const rs = new Readable()
-        //   // rs._read = async () => {
-        //   //   const result = await reader.read()
-        //   //   if (!result.done) {
-        //   //     rs.push(Buffer.from(result.value))
-        //   //   } else {
-        //   //     rs.push(null)
-        //   //     return null
-        //   //   }
-        //   // }
-
-        //   // return rs
-        //   // }
-        //   // console.log(response)
-        //   // this.loadFiles()
-        // })
-        // .catch(error => {
-        //   console.log(error)
-        //   this.errorAlarm()
-        // })
+        .then(stream => new Response(stream))
+        .then(response => response.blob())
+        .then(blob => URL.createObjectURL(blob))
+        .then(url => console.log(url))
+        .catch(err => console.error(err))
     },
     deleteFile (fileName) {
       const headers = new Headers({
@@ -290,9 +213,9 @@ console.log(pump())
     },
     uploadFiles (files) {
       let formData = new FormData()
-      for (var index = 0; index < files.length; index++) {
-        formData.append('files', files[index])
-      }
+      // for (var index = 0; index < files.length; index++) {
+      //   formData.append('files', files[index])
+      // }
       // files.forEach(function (value, key) {  //not function
       //   formData.append('files', files[key])
       //   formData.append('files', value)
