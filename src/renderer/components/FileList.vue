@@ -1,44 +1,44 @@
 <template>
   <v-layout align-start justify-center row wrap>
     <v-flex xs12 sm12 md12>
-      <v-toolbar flat color='white'>
+      <v-toolbar flat color="white">
         <v-toolbar-title>FileList</v-toolbar-title>
       </v-toolbar>
-      <v-card class='pa-3'>
+      <v-card class="pa-3">
         <v-card-title>
           <v-spacer></v-spacer>
           <v-text-field
-            v-model='search'
-            append-icon='search'
-            label='Search'
+            v-model="search"
+            append-icon="search"
+            label="Search"
             single-line
             hide-details
           ></v-text-field>
         </v-card-title>
         <v-data-table
-          v-model='selected'
-          :headers='headers'
-          :items='files'
-          :search='search'
-          item-key='name'
+          v-model="selected"
+          :headers="headers"
+          :items="files"
+          :search="search"
+          item-key="name"
           select-all
-          class='elevation-1'
+          class="elevation-1"
         >
           <!-- hide-actions
           :pagination.sync='pagination'-->
-          <v-progress-linear v-slot:progress color='blue' indeterminate></v-progress-linear>
-          <template v-slot:items='props'>
+          <v-progress-linear v-slot:progress color="blue" indeterminate></v-progress-linear>
+          <template v-slot:items="props">
             <td>
-              <v-checkbox v-model='props.selected' primary hide-details></v-checkbox>
+              <v-checkbox v-model="props.selected" primary hide-details></v-checkbox>
             </td>
             <td>
-              <a v-bind:href='props.item.downloadUri' download>{{ props.item.name }}</a>
+              <a v-bind:href="props.item.downloadUri" download>{{ props.item.name }}</a>
             </td>
             <td>{{ props.item.type }}</td>
             <td>{{ props.item.size }}</td>
             <td>{{ props.item.updatedAt }}</td>
-            <td class='align-center justify-start layout px-0'>
-              <v-icon small @click='deleteFile(props.item.name)'>delete</v-icon>
+            <td class="align-center justify-start layout px-0">
+              <v-icon small @click="deleteFile(props.item.name)">delete</v-icon>
             </td>
           </template>
           <!-- <template v-slot:no-results>
@@ -50,17 +50,17 @@
         <!-- <div class='text-xs-center pt-2'>
           <v-pagination v-model='pagination.page' :length='pages'></v-pagination>
         </div>-->
-        <v-btn raised class='primary' @click='onPickFile'>Upload</v-btn>
+        <v-btn raised class="primary" @click="onPickFile">Upload</v-btn>
         <input
-          type='file'
-          style='display: none'
-          ref='fileInput'
-          accept='*'
-          @change='onFilePicked'
+          type="file"
+          style="display: none"
+          ref="fileInput"
+          accept="*"
+          @change="onFilePicked"
           multiple
           required
         >
-        <v-btn raised class='primary' @click='ondownloadFile'>Download</v-btn>
+        <v-btn raised class="primary" @click="ondownloadFile">Download</v-btn>
       </v-card>
     </v-flex>
   </v-layout>
@@ -68,6 +68,8 @@
 
 <script>
 const request = require('request')
+// const https = require('https')
+const http = require('http')
 const fs = require('fs')
 export default {
   name: 'FileList',
@@ -120,33 +122,43 @@ export default {
         percentage + '% | ' + received + ' bytes out of ' + total + ' bytes.'
       )
     },
-    downloadFile (fileUrl, targetPath) {
-      // Save variable to know progress
-      let receivedBytes = 0
-      let totalBytes = 0
+    downloadFile (configuration) {
+      return new Promise(function (resolve, reject) {
+        // Save variable to know progress
+        let receivedBytes = 0
+        let totalBytes = 0
 
-      const req = request({
-        method: 'GET',
-        uri: fileUrl
-      })
+        let req = request({
+          method: 'GET',
+          uri: configuration.remoteFile
+        })
 
-      const out = fs.createWriteStream(targetPath)
-      req.pipe(out)
+        let out = fs.createWriteStream(configuration.localFile)
+        req.pipe(out)
 
-      req.on('response', function (data) {
-        // Change the total bytes value to get progress later.
-        totalBytes = parseInt(data.headers['content-length'])
-      })
+        req.on('response', function (data) {
+          // Change the total bytes value to get progress later.
+          totalBytes = parseInt(data.headers['content-length'])
+        })
 
-      req.on('data', function (chunk) {
-        // Update the received bytes
-        receivedBytes += chunk.length
+        // Get progress if callback exists
+        if (configuration.hasOwnProperty('onProgress')) {
+          req.on('data', function (chunk) {
+            // Update the received bytes
+            receivedBytes += chunk.length
 
-        this.showProgress(receivedBytes, totalBytes)
-      })
+            configuration.onProgress(receivedBytes, totalBytes)
+          })
+        } else {
+          req.on('data', function (chunk) {
+            // Update the received bytes
+            receivedBytes += chunk.length
+          })
+        }
 
-      req.on('end', function () {
-        alert('File succesfully downloaded')
+        req.on('end', function () {
+          resolve()
+        })
       })
     },
     ondownloadFiles () {
@@ -157,10 +169,38 @@ export default {
     },
     ondownloadFile (fileName) {
       fileName = this.selected[0].name
-      const url =
-        'http://localhost:8080/api/file/deleteFile?fileName=' + fileName
-      const dir = '/downloads/' + fileName
-      this.downloadFile(url, dir)
+      const url = 'http://localhost:8080/api/file/deleteFile?fileName=' + fileName
+      const name = 'C:/Users/Achivsoft/Downloads/' + fileName
+      const file = fs.createWriteStream(name)
+      return new Promise(resolve => {
+        http.get(url, response => {
+          response.pipe(file)
+        })
+      })
+      // const { BrowserWindow, ipcMain } = require('electron')
+      // const { download } = require('electron-dl')
+
+      // ipcMain.on('download-button', async (event, { url }) => {
+      //   const win = BrowserWindow.getFocusedWindow()
+      //   console.log(await download(win, url))
+      // })
+
+      // const BrowserWindow = require('electron')
+      // const download = require('electron-dl')
+      // const activeWindow = BrowserWindow.getFocusedWindow()
+      // download(activeWindow, 'http://localhost:8080/api/file/deleteFile?fileName=' + fileName, { directory: 'c:/downloads' })
+
+      // this.downloadFile({
+      //   // remoteFile: 'http://www.planwallpaper.com/static/images/butterfly-wallpaper.jpeg',
+      //   remoteFile: 'http://localhost:8080/api/file/deleteFile?fileName=' + fileName,
+      //   localFile: '/' + fileName,
+      //   onProgress: function (received, total) {
+      //     var percentage = (received * 100) / total
+      //     console.log(percentage + '% | ' + received + ' bytes out of ' + total + ' bytes.')
+      //   }
+      // }).then(function () {
+      //   alert('File succesfully downloaded')
+      // })
     },
     deleteFile (fileName) {
       const headers = new Headers({

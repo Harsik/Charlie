@@ -1,43 +1,43 @@
 <template>
-    <v-layout align-start justify-center row wrap>
-      <v-flex xs12 sm6 md4>
-        <v-card class='pa-3 ma-1'>
-          <div class='headline'>
-            <v-layout align-center justify-start>{{ avatarText }}</v-layout>
-            <v-divider></v-divider>
-            <v-layout class='pa-3' align-center justify-center>
-              <v-avatar :tile='true' :size='300' color='grey lighten-4'>
-                <img :src='imageUrl' alt='avatar'>
-              </v-avatar>
-            </v-layout>
-            <v-btn raised class='primary' @click='onPickFile'>Upload</v-btn>
-            <input
-              type='file'
-              style='display: none'
-              ref='fileInput'
-              accept='image/*'
-              @change='onFilePicked'
-            >
-          </div>
-        </v-card>
-      </v-flex>
-      <v-flex xs12 sm6 md4>
-        <v-card class='pa-3 ma-1'>
-          <div class='headline'>
-            <v-layout align-center justify-start>{{ profileText }}</v-layout>
-            <v-divider></v-divider>
-          </div>
-          <v-form class='pa-3' ref='form' v-model='valid' lazy-validation>
-            <v-text-field label='Email' v-model='email' :disabled='true'></v-text-field>
-            <v-text-field label='Name' v-model='profile.name'></v-text-field>
-            <v-text-field label='Bio' v-model='profile.bio'></v-text-field>
-            <v-text-field label='Company' v-model='profile.company'></v-text-field>
-            <v-text-field label='Address' v-model='profile.address'></v-text-field>
-            <v-btn color='primary' :disabled='!valid' @click='editProfile'>Edit</v-btn>
-          </v-form>
-        </v-card>
-      </v-flex>
-    </v-layout>
+  <v-layout align-start justify-center row wrap>
+    <v-flex xs12 sm6 md4>
+      <v-card class="pa-3 ma-1">
+        <div class="headline">
+          <v-layout align-center justify-start>{{ avatarText }}</v-layout>
+          <v-divider></v-divider>
+          <v-layout class="pa-3" align-center justify-center>
+            <v-avatar :tile="true" :size="300" color="grey lighten-4">
+              <img :src="imageUrl" alt="avatar">
+            </v-avatar>
+          </v-layout>
+          <v-btn raised class="primary" @click="onPickFile">Upload</v-btn>
+          <input
+            type="file"
+            style="display: none"
+            ref="fileInput"
+            accept="image/*"
+            @change="onFilePicked"
+          >
+        </div>
+      </v-card>
+    </v-flex>
+    <v-flex xs12 sm6 md4>
+      <v-card class="pa-3 ma-1">
+        <div class="headline">
+          <v-layout align-center justify-start>{{ profileText }}</v-layout>
+          <v-divider></v-divider>
+        </div>
+        <v-form class="pa-3" ref="form" v-model="valid" lazy-validation>
+          <v-text-field label="Email" v-model="email" :disabled="true"></v-text-field>
+          <v-text-field label="Name" v-model="profile.name"></v-text-field>
+          <v-text-field label="Bio" v-model="profile.bio"></v-text-field>
+          <v-text-field label="Company" v-model="profile.company"></v-text-field>
+          <v-text-field label="Address" v-model="profile.address"></v-text-field>
+          <v-btn color="primary" :disabled="!valid" @click="editProfile">Edit</v-btn>
+        </v-form>
+      </v-card>
+    </v-flex>
+  </v-layout>
 </template>
 
 <script>
@@ -131,7 +131,6 @@ export default {
     onPickFile () {
       this.$refs.fileInput.click()
     },
-    uploadFile () {},
     editProfile () {
       const headers = new Headers({
         'Content-Type': 'application/json'

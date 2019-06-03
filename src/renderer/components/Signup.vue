@@ -1,8 +1,8 @@
 <template>
   <v-layout align-start justify-center>
     <v-flex xs12 sm6>
-      <v-card class='pa-3'>
-        <div class='pa-3'>
+      <v-card class="pa-3">
+        <div class="pa-3">
           <v-layout align-center justify-center>
             <v-icon x-large>perm_identity</v-icon>
             <v-spacer></v-spacer>
@@ -10,28 +10,27 @@
           </v-layout>
           <v-divider inset></v-divider>
         </div>
-        <v-form class='pa-3' ref='form' v-model='valid' lazy-validation>
+        <v-form class="pa-3" ref="form" v-model="valid" lazy-validation>
           <v-text-field
-            class='pa-3'
-            label='Email'
-            v-model='email'
-            :rules='emailRules'
-            :error-messages='errors'
+            class="pa-3"
+            label="Email"
+            v-model="email"
+            :rules="emailRules"
+            :error-messages="errors"
             clearable
-            :loading='loadingProgress'
-          >
-          </v-text-field>
+            :loading="loadingProgress"
+          ></v-text-field>
           <v-text-field
-            class='pa-3'
-            label='Password'
-            v-model='password'
-            :rules='passwordRules'
-            type='password'
-            hint='At least 8 characters'
-            @keyup.enter='login'
+            class="pa-3"
+            label="Password"
+            v-model="password"
+            :rules="passwordRules"
+            type="password"
+            hint="At least 8 characters"
+            @keyup.enter="login"
             clearable
           ></v-text-field>
-          <v-btn color='primary' :disabled='!valid' @click='signup'>
+          <v-btn color="primary" :disabled="!valid" @click="signup">
             <v-icon left>assignment_ind</v-icon>Sign up
           </v-btn>
         </v-form>
@@ -86,7 +85,7 @@ export default {
       this.loadingProgress = true
       fetch(
         'http://localhost:8080/api/account/checkEmailAvailability?email=' +
-          this.email,
+        this.email,
         {
           method: 'GET'
         }
