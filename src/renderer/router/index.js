@@ -5,6 +5,14 @@ Vue.use(Router)
 
 export default new Router({
   routes: [{
+    path: '/setting',
+    name: 'Setting',
+    component: require('@/components/setting').default
+  }, {
+    path: '/fileList',
+    name: 'FileList',
+    component: require('@/components/fileList').default
+  }, {
     path: '/profile',
     name: 'Profile',
     component: require('@/components/profile').default
@@ -28,10 +36,6 @@ export default new Router({
     path: '/inspire',
     name: 'inspire',
     component: require('@/components/InspireView').default
-  }, {
-    path: '/fileList',
-    name: 'fileList',
-    component: require('@/components/FileList').default
   }, {
     path: '*',
     redirect: '/'

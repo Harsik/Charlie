@@ -31,9 +31,7 @@
             <td>
               <v-checkbox v-model="props.selected" primary hide-details></v-checkbox>
             </td>
-            <td>
-              <a v-bind:href="props.item.downloadUri" download>{{ props.item.name }}</a>
-            </td>
+            <td>{{ props.item.name }}</td>
             <td>{{ props.item.type }}</td>
             <td>{{ props.item.size }}</td>
             <td>{{ props.item.updatedAt }}</td>
@@ -60,21 +58,21 @@
           multiple
           required
         >
-        <v-btn raised class="primary" @click="ondownloadFile">Download</v-btn>
+        <v-btn raised class="primary" @click="ondownloadFiles">Download</v-btn>
+        <!-- <v-btn raised class="primary" @click="ondownloadFiles">Download Folder</v-btn> -->
+        <v-progress-circular v-if="isDownloading" indeterminate></v-progress-circular>
       </v-card>
     </v-flex>
   </v-layout>
 </template>
 
 <script>
-const request = require('request')
-// const https = require('https')
 const http = require('http')
 const fs = require('fs')
 export default {
   name: 'FileList',
   data: () => ({
-    loading: false,
+    isDownloading: false,
     search: '',
     pagination: {
       // descending: true,
@@ -122,85 +120,34 @@ export default {
         percentage + '% | ' + received + ' bytes out of ' + total + ' bytes.'
       )
     },
-    downloadFile (configuration) {
-      return new Promise(function (resolve, reject) {
-        // Save variable to know progress
-        let receivedBytes = 0
-        let totalBytes = 0
-
-        let req = request({
-          method: 'GET',
-          uri: configuration.remoteFile
-        })
-
-        let out = fs.createWriteStream(configuration.localFile)
-        req.pipe(out)
-
-        req.on('response', function (data) {
-          // Change the total bytes value to get progress later.
-          totalBytes = parseInt(data.headers['content-length'])
-        })
-
-        // Get progress if callback exists
-        if (configuration.hasOwnProperty('onProgress')) {
-          req.on('data', function (chunk) {
-            // Update the received bytes
-            receivedBytes += chunk.length
-
-            configuration.onProgress(receivedBytes, totalBytes)
-          })
-        } else {
-          req.on('data', function (chunk) {
-            // Update the received bytes
-            receivedBytes += chunk.length
-          })
-        }
-
-        req.on('end', function () {
-          resolve()
-        })
-      })
-    },
     ondownloadFiles () {
+      this.isDownloading = true
       this.selected.forEach(function (value, key) {
-        console.log(value)
-        this.downloadFile(value.name)
-      })
-    },
-    ondownloadFile (fileName) {
-      fileName = this.selected[0].name
-      const url = 'http://localhost:8080/api/file/deleteFile?fileName=' + fileName
-      const name = 'C:/Users/Achivsoft/Downloads/' + fileName
-      const file = fs.createWriteStream(name)
-      return new Promise(resolve => {
-        http.get(url, response => {
-          response.pipe(file)
+        let url = 'http://localhost:8080/api/file/deleteFile?fileName=' + value.name
+        let name = 'C:/Users/Achivsoft/Downloads/' + value.name
+        const file = fs.createWriteStream(name)
+        return new Promise(resolve => {
+          http.get(url, response => {
+            response.pipe(file)
+          })
         })
+        // .then(response => {
+        //   this.isDownloading = false
+        //   this.downloadAlarm()
+        // })
+        //   .catch(error => {
+        //     this.isDownloading = false
+        //     console.log(error)
+        //     this.errorAlarm()
+        //   })
       })
-      // const { BrowserWindow, ipcMain } = require('electron')
-      // const { download } = require('electron-dl')
+      this.isDownloading = false
+      this.downloadAlarm()
+      // const { shell } = require('electron') // deconstructing assignment
 
-      // ipcMain.on('download-button', async (event, { url }) => {
-      //   const win = BrowserWindow.getFocusedWindow()
-      //   console.log(await download(win, url))
-      // })
-
-      // const BrowserWindow = require('electron')
-      // const download = require('electron-dl')
-      // const activeWindow = BrowserWindow.getFocusedWindow()
-      // download(activeWindow, 'http://localhost:8080/api/file/deleteFile?fileName=' + fileName, { directory: 'c:/downloads' })
-
-      // this.downloadFile({
-      //   // remoteFile: 'http://www.planwallpaper.com/static/images/butterfly-wallpaper.jpeg',
-      //   remoteFile: 'http://localhost:8080/api/file/deleteFile?fileName=' + fileName,
-      //   localFile: '/' + fileName,
-      //   onProgress: function (received, total) {
-      //     var percentage = (received * 100) / total
-      //     console.log(percentage + '% | ' + received + ' bytes out of ' + total + ' bytes.')
-      //   }
-      // }).then(function () {
-      //   alert('File succesfully downloaded')
-      // })
+      // shell.openItem('filepath')
+      // shell.openItem('C:/Users/Achivsoft/Downloads/')
+      // shell.showItemInFolder('C:/Users/Achivsoft/Downloads/')
     },
     deleteFile (fileName) {
       const headers = new Headers({
@@ -253,13 +200,9 @@ export default {
     },
     uploadFiles (files) {
       let formData = new FormData()
-      // for (var index = 0 index < files.length index++) {
-      //   formData.append('files', files[index])
-      // }
-      // files.forEach(function (value, key) {  //not function
-      //   formData.append('files', files[key])
-      //   formData.append('files', value)
-      // })
+      for (let file in files) {
+        formData.append('files', files[file])
+      }
       const headers = new Headers({
         // 'Content-Type': 'multipart/form-data'
       })
@@ -282,6 +225,7 @@ export default {
     },
     onFilePicked (event) {
       const files = event.target.files // file info load
+
       let filename = files[0].name
       if (filename.lastIndexOf('.') <= 0) {
         return alert('Please pick valid file')
@@ -291,7 +235,6 @@ export default {
         this.imageUrl = fileReader.result
       })
       fileReader.readAsDataURL(files[0])
-      // this.uploadFile(files[0])
       this.uploadFiles(files)
     },
     onPickFile () {
@@ -322,6 +265,10 @@ export default {
           console.log(error)
           this.errorAlarm()
         })
+    },
+    downloadAlarm () {
+      const set = { color: 'success', text: 'Download Complete' }
+      this.$emit('setSnackbar', set)
     },
     errorAlarm () {
       const set = { color: 'error', text: 'Server error' }

@@ -28,7 +28,7 @@
           <v-icon left>power_settings_new</v-icon> {{ loginText }}
         </v-btn>
             <v-progress-circular
-              v-if="loadingProgress"
+              v-if="isLoading"
               indeterminate
             ></v-progress-circular>
       </v-form>
@@ -42,7 +42,7 @@ export default {
   props: ['isAuthenticated'],
   name: 'Login',
   data: () => ({
-    loadingProgress: false,
+    isLoading: false,
     loginText: 'Login',
     headerText: 'This is Login Page',
     valid: true,
@@ -72,7 +72,7 @@ export default {
       this.$emit('setSnackbar', set)
     },
     login () {
-      this.loadingProgress = true
+      this.isLoading = true
       if (this.$refs.form.validate()) {
         localStorage.email = this.email
         // localStorage.password = this.password
@@ -95,7 +95,7 @@ export default {
               if (!response.ok) {
                 return Promise.reject(json)
               }
-              this.loadingProgress = false
+              this.isLoading = false
               localStorage.accessToken = json.accessToken
               this.$emit('sendAuthentication', true)
               this.loginSuccessAlarm()
@@ -104,7 +104,7 @@ export default {
           )
           .catch(() => {
             this.loginFailAlarm()
-            this.loadingProgress = false
+            this.isLoading = false
             // console.log(error)
           })
       }
