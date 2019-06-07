@@ -1,7 +1,6 @@
 <template>
   <v-layout align-start justify-center>
-    <v-flex xs12 sm6>
-    </v-flex>
+    <v-flex xs12 sm6></v-flex>
   </v-layout>
 </template>
 

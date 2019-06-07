@@ -2,13 +2,20 @@
   <v-layout align-start justify-center row wrap>
     <v-flex xs12 sm6 md4>
       <v-card class="pa-3 ma-1">
-        <div class="headline">
+        <div class="headline ma-2">
           <v-layout align-center justify-start>{{ settingText }}</v-layout>
           <v-divider></v-divider>
-        </div>
-        <v-form class="pa-3" ref="form" v-model="valid" lazy-validation>
           <v-switch v-model="isDarkness" label="Set Dark" @change="setDarkness"></v-switch>
-        </v-form>
+        </div>
+        <div class="headline ma-2">
+          <v-layout align-center justify-start>{{ emailText }}</v-layout>
+          <v-divider></v-divider>
+          {{ email }}
+          <v-switch v-model="isAutoLogin" label="Set AutoLogin" @change="setAutoLogin"></v-switch>
+        </div>
+        <div class="headline ma-2">
+          <v-layout align-center justify-start>{{ versionText }}</v-layout>
+        </div>
       </v-card>
     </v-flex>
   </v-layout>
@@ -19,10 +26,13 @@ export default {
   props: ['isDark'],
   name: 'Setting',
   data: () => ({
-    isDarkness: true,
+    isAutoLogin: false,
+    isDarkness: false,
     imageUrl: '',
     valid: true,
     settingText: 'Setting',
+    emailText: 'Your email : ',
+    versionText: 'Version : 1.0.0',
     email: localStorage.email,
     profile: {
       name: null,
@@ -32,10 +42,20 @@ export default {
     }
   }),
   mounted () {
+    if (localStorage.isDark === 'true') {
+      this.isDarkness = true
+    }
+    if (localStorage.isAutoLogin === 'true') {
+      this.isAutoLogin = true
+    }
   },
   methods: {
+    setAutoLogin () {
+      localStorage.isAutoLogin = this.isAutoLogin
+    },
     setDarkness () {
       this.$emit('setDark', this.isDarkness)
+      localStorage.isDark = this.isDarkness
     },
     errorAlarm () {
       const set = { color: 'error', text: 'Server error' }

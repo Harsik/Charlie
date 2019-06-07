@@ -67,6 +67,7 @@ export default {
   // props: ['currentUser'],
   name: 'Charlie',
   data: () => ({
+    isAutoLogin: false,
     isDark: false,
     sideicon: false, // !isAuthenticated
     app: false,
@@ -89,6 +90,14 @@ export default {
   }),
   mounted () {
     this.app = true
+    if (localStorage.isDark === 'true') {
+      this.isDark = true
+    }
+    if (localStorage.isAutoLogin === 'true') {
+      if (localStorage.accessToken !== null) {
+        this.isAuthenticated = true
+      }
+    }
   },
   methods: {
     setDark (bool) {

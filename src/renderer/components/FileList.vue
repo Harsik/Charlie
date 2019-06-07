@@ -59,7 +59,7 @@
           required
         >
         <v-btn raised class="primary" @click="ondownloadFiles">Download</v-btn>
-        <!-- <v-btn raised class="primary" @click="ondownloadFiles">Download Folder</v-btn> -->
+        <v-btn raised class="primary" @click="openDownloadFolder">Folder</v-btn>
         <v-progress-circular v-if="isDownloading" indeterminate></v-progress-circular>
       </v-card>
     </v-flex>
@@ -131,26 +131,13 @@ export default {
     }
   },
   methods: {
-    // download (url, name) {
-    //   // TODO: check if url is duplicated. Sometimes
-    //   // OpenSubtitles is returning wrong sub in a TV Show
-    //   // console.log(url, name)
-    //   const file = fs.createWriteStream(name)
-    //   return new Promise(resolve => {
-    //     http.get(url, response => {
-    //       // console.log(response)
-    //       response.pipe(file)
-    //       // console.log(resolve)
-    //       resolve('ready')
-    //     })
-    //   })
-    // },
-    // showProgress (received, total) {
-    //   const percentage = (received * 100) / total
-    //   console.log(
-    //     percentage + '% | ' + received + ' bytes out of ' + total + ' bytes.'
-    //   )
-    // },
+    openDownloadFolder () {
+      const { shell } = require('electron') // deconstructing assignment
+
+      // shell.openItem('filepath')
+      // shell.openItem('C:/Users/Achivsoft/Downloads/')
+      shell.showItemInFolder('C:/Users/Achivsoft/Downloads/*')
+    },
     ondownloadFiles () {
       this.isDownloading = true
       this.selected.forEach(function (value, key) {
@@ -158,59 +145,11 @@ export default {
         // console.log(fileName)
         let url = 'http://localhost:8080/api/file/downloadFile?' + fileName
         let name = 'C:/Users/Achivsoft/Downloads/' + fileName
-        // const file = fs.createWriteStream(name)
-        // const download = function (url, name) {
-        //   // TODO: check if url is duplicated. Sometimes
-        //   // OpenSubtitles is returning wrong sub in a TV Show
-        //   // console.log(url, name)
-        //   const file = fs.createWriteStream(name)
-        //   return new Promise(resolve => {
-        //     http.get(url, response => {
-        //       // console.log(response)
-        //       response.pipe(file)
-        //       // console.log(resolve)
-        //       resolve('ready')
-        //     })
-        //   })\
-        download(url, name).then((e) => {
-          // this.isDownloading = false
-          this.downloadAlarm()
+        download(url, name).then(() => {
         })
-        // return new Promise(resolve => {
-        //   http.get(url, response => {
-        //     // console.log(response)
-        //     response.pipe(file)
-        //     // response.on('response', (data) => {
-        //     //   this.totalBytes = parseInt(data.headers['content-length'])
-        //     //   console.log(this.totalBytes)
-        //     // })
-        //     // .on('data', (chunk) => {
-        //     //   this.receivedBytes += chunk.length
-        //     //   this.showProgress(this.receivedBytes, this.totalBytes)
-        //     // }).on('end', () => {
-        //     //   this.isDownloading = false
-        //     //   this.downloadAlarm()
-        //     // })
-        //   })
-        // })
-        // .then(response => {
-        //   console.log(response)
-        //   this.isDownloading = false
-        //   this.downloadAlarm()
-        // })
-        // .catch(error => {
-        //   this.isDownloading = false
-        //   console.log(error)
-        //   this.errorAlarm()
-        // })
       })
-      // this.isDownloading = false
-      // this.downloadAlarm()
-      // const { shell } = require('electron') // deconstructing assignment
-
-      // shell.openItem('filepath')
-      // shell.openItem('C:/Users/Achivsoft/Downloads/')
-      // shell.showItemInFolder('C:/Users/Achivsoft/Downloads/')
+      this.isDownloading = false
+      this.downloadAlarm()
     },
     deleteFile (fileName) {
       const headers = new Headers({
