@@ -68,23 +68,23 @@
 
 <script>
 // const request = require('request')
-import http from 'http'
 import fs from 'fs'
 
-function download (url, name) {
-  // TODO: check if url is duplicated. Sometimes
-  // OpenSubtitles is returning wrong sub in a TV Show
-  const file = fs.createWriteStream(name)
-  return new Promise(resolve => {
-    http.get(url, response => {
-      response.pipe(file)
-      resolve('ready')
-    })
-  })
-}
+// import http from 'http'
+
+// function download (url, name) {
+//   // TODO: check if url is duplicated. Sometimes
+//   // OpenSubtitles is returning wrong sub in a TV Show
+//   const file = fs.createWriteStream(name)
+//   return new Promise(resolve => {
+//     http.get(url, response => {
+//       response.pipe(file)
+//       resolve(response)
+//     })
+//   })
+// }
 
 export default {
-  // var app = new Vue({
   name: 'FileList',
   data: () => ({
     totalBytes: 0,
@@ -92,11 +92,6 @@ export default {
     isDownloading: false,
     search: '',
     pagination: {
-      // descending: true,
-      // page: 1,
-      // rowsPerPage: 4,
-      // totalItems: 0,
-      // rowsPerPageItems: [1, 2, 4, 8, 16],
       sortBy: 'updatedAt'
     },
     selected: [],
@@ -133,20 +128,42 @@ export default {
   methods: {
     openDownloadFolder () {
       const { shell } = require('electron') // deconstructing assignment
-
-      // shell.openItem('filepath')
-      // shell.openItem('C:/Users/Achivsoft/Downloads/')
       shell.showItemInFolder('C:/Users/Achivsoft/Downloads/*')
     },
     ondownloadFiles () {
       this.isDownloading = true
       this.selected.forEach(function (value, key) {
         const fileName = value.name
-        // console.log(fileName)
-        let url = 'http://localhost:8080/api/file/downloadFile?' + fileName
+        let url = 'http://localhost:8080/api/file/downloadFile/' + fileName
         let name = 'C:/Users/Achivsoft/Downloads/' + fileName
-        download(url, name).then(() => {
+        const file = fs.createWriteStream(name)
+        const headers = new Headers({
+          // 'Content-Type': 'application/json'
         })
+        if (localStorage.accessToken) {
+          headers.append('Authorization', 'Bearer ' + localStorage.accessToken)
+        }
+        fetch(url, {
+          method: 'GET',
+          headers: headers
+        }).then(response => response.body)
+          .then(body => body.pipeThrough(file))
+          // .then(rs => rs.pipeTo(new FinalDestinationStream()))
+        //   .then((
+        //     response // response.ok 값을 남기기 위해 respoense.json().then으로 다시 출력
+        //   ) => {
+        //     console.log(response)
+        //     response.body.pipeThrough(file)
+        //     // this.loadFiles()
+        //   }
+        //   )
+        // .catch(error => {
+        //   console.log(error)
+        //   this.errorAlarm()
+        // })
+        // download(url, name).then(response => {
+        //   console.log(response)
+        // })
       })
       this.isDownloading = false
       this.downloadAlarm()
