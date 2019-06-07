@@ -67,11 +67,40 @@
 </template>
 
 <script>
+// let isDownloading = false
+// const request = require('request')
 const http = require('http')
 const fs = require('fs')
+
+function download (url, name) {
+  // TODO: check if url is duplicated. Sometimes
+  // OpenSubtitles is returning wrong sub in a TV Show
+  // console.log(url, name)
+  const file = fs.createWriteStream(name)
+  return new Promise(resolve => {
+    http.get(url, response => {
+      // console.log(response)
+      response.pipe(file)
+      // console.log(resolve)
+      resolve('ready')
+    })
+  })
+  // .then(response => {
+  //   console.log(response)
+  //   this.isDownloading = false
+  //   this.downloadAlarm()
+  // })
+  //   .catch(error => {
+  //     this.isDownloading = false
+  //     console.log(error)
+  //     this.errorAlarm()
+  //   })
+}
 export default {
   name: 'FileList',
   data: () => ({
+    totalBytes: 0,
+    receivedBytes: 0,
     isDownloading: false,
     search: '',
     pagination: {
@@ -114,6 +143,20 @@ export default {
     }
   },
   methods: {
+    download (url, name) {
+      // TODO: check if url is duplicated. Sometimes
+      // OpenSubtitles is returning wrong sub in a TV Show
+      // console.log(url, name)
+      const file = fs.createWriteStream(name)
+      return new Promise(resolve => {
+        http.get(url, response => {
+          // console.log(response)
+          response.pipe(file)
+          // console.log(resolve)
+          resolve('ready')
+        })
+      })
+    },
     showProgress (received, total) {
       const percentage = (received * 100) / total
       console.log(
@@ -123,26 +166,47 @@ export default {
     ondownloadFiles () {
       this.isDownloading = true
       this.selected.forEach(function (value, key) {
-        let url = 'http://localhost:8080/api/file/deleteFile?fileName=' + value.name
-        let name = 'C:/Users/Achivsoft/Downloads/' + value.name
-        const file = fs.createWriteStream(name)
-        return new Promise(resolve => {
-          http.get(url, response => {
-            response.pipe(file)
-          })
+        // console.log(value.name)
+        const fileName = value.name
+        let url = 'http://localhost:8080/api/file/downloadFile?' + fileName
+        let name = 'C:/Users/Achivsoft/Downloads/' + fileName
+        // const file = fs.createWriteStream(name)
+
+        download(url, name).then(function (e) {
+          console.log(e)
+          // this.isDownloading = false
+          // this.downloadAlarm()
         })
+        // return new Promise(resolve => {
+        //   http.get(url, response => {
+        //     // console.log(response)
+        //     response.pipe(file)
+        //     // response.on('response', (data) => {
+        //     //   this.totalBytes = parseInt(data.headers['content-length'])
+        //     //   console.log(this.totalBytes)
+        //     // })
+        //     // .on('data', (chunk) => {
+        //     //   this.receivedBytes += chunk.length
+        //     //   this.showProgress(this.receivedBytes, this.totalBytes)
+        //     // }).on('end', () => {
+        //     //   this.isDownloading = false
+        //     //   this.downloadAlarm()
+        //     // })
+        //   })
+        // })
         // .then(response => {
+        //   console.log(response)
         //   this.isDownloading = false
         //   this.downloadAlarm()
         // })
-        //   .catch(error => {
-        //     this.isDownloading = false
-        //     console.log(error)
-        //     this.errorAlarm()
-        //   })
+        // .catch(error => {
+        //   this.isDownloading = false
+        //   console.log(error)
+        //   this.errorAlarm()
+        // })
       })
-      this.isDownloading = false
-      this.downloadAlarm()
+      // this.isDownloading = false
+      // this.downloadAlarm()
       // const { shell } = require('electron') // deconstructing assignment
 
       // shell.openItem('filepath')

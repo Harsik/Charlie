@@ -42,7 +42,7 @@
             <router-view
               :isAuthenticated="isAuthenticated"
               :isDark="isDark"
-              @sendAuthentication="getAuthentication"
+              @sendAuthentication="setAuthentication"
               @setSnackbar="setSnackbar"
               @setDark="setDark"
             ></router-view>
@@ -94,7 +94,7 @@ export default {
     setDark (bool) {
       this.isDark = bool
     },
-    getAuthentication (bool) {
+    setAuthentication (bool) {
       this.isAuthenticated = bool
     },
     setSnackbar (set) {
