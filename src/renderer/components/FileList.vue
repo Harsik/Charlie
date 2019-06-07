@@ -67,36 +67,24 @@
 </template>
 
 <script>
-// let isDownloading = false
 // const request = require('request')
-const http = require('http')
-const fs = require('fs')
+import http from 'http'
+import fs from 'fs'
 
 function download (url, name) {
   // TODO: check if url is duplicated. Sometimes
   // OpenSubtitles is returning wrong sub in a TV Show
-  // console.log(url, name)
   const file = fs.createWriteStream(name)
   return new Promise(resolve => {
     http.get(url, response => {
-      // console.log(response)
       response.pipe(file)
-      // console.log(resolve)
       resolve('ready')
     })
   })
-  // .then(response => {
-  //   console.log(response)
-  //   this.isDownloading = false
-  //   this.downloadAlarm()
-  // })
-  //   .catch(error => {
-  //     this.isDownloading = false
-  //     console.log(error)
-  //     this.errorAlarm()
-  //   })
 }
+
 export default {
+  // var app = new Vue({
   name: 'FileList',
   data: () => ({
     totalBytes: 0,
@@ -143,39 +131,50 @@ export default {
     }
   },
   methods: {
-    download (url, name) {
-      // TODO: check if url is duplicated. Sometimes
-      // OpenSubtitles is returning wrong sub in a TV Show
-      // console.log(url, name)
-      const file = fs.createWriteStream(name)
-      return new Promise(resolve => {
-        http.get(url, response => {
-          // console.log(response)
-          response.pipe(file)
-          // console.log(resolve)
-          resolve('ready')
-        })
-      })
-    },
-    showProgress (received, total) {
-      const percentage = (received * 100) / total
-      console.log(
-        percentage + '% | ' + received + ' bytes out of ' + total + ' bytes.'
-      )
-    },
+    // download (url, name) {
+    //   // TODO: check if url is duplicated. Sometimes
+    //   // OpenSubtitles is returning wrong sub in a TV Show
+    //   // console.log(url, name)
+    //   const file = fs.createWriteStream(name)
+    //   return new Promise(resolve => {
+    //     http.get(url, response => {
+    //       // console.log(response)
+    //       response.pipe(file)
+    //       // console.log(resolve)
+    //       resolve('ready')
+    //     })
+    //   })
+    // },
+    // showProgress (received, total) {
+    //   const percentage = (received * 100) / total
+    //   console.log(
+    //     percentage + '% | ' + received + ' bytes out of ' + total + ' bytes.'
+    //   )
+    // },
     ondownloadFiles () {
       this.isDownloading = true
       this.selected.forEach(function (value, key) {
-        // console.log(value.name)
         const fileName = value.name
+        // console.log(fileName)
         let url = 'http://localhost:8080/api/file/downloadFile?' + fileName
         let name = 'C:/Users/Achivsoft/Downloads/' + fileName
         // const file = fs.createWriteStream(name)
-
-        download(url, name).then(function (e) {
-          console.log(e)
+        // const download = function (url, name) {
+        //   // TODO: check if url is duplicated. Sometimes
+        //   // OpenSubtitles is returning wrong sub in a TV Show
+        //   // console.log(url, name)
+        //   const file = fs.createWriteStream(name)
+        //   return new Promise(resolve => {
+        //     http.get(url, response => {
+        //       // console.log(response)
+        //       response.pipe(file)
+        //       // console.log(resolve)
+        //       resolve('ready')
+        //     })
+        //   })\
+        download(url, name).then((e) => {
           // this.isDownloading = false
-          // this.downloadAlarm()
+          this.downloadAlarm()
         })
         // return new Promise(resolve => {
         //   http.get(url, response => {
@@ -331,6 +330,7 @@ export default {
         })
     },
     downloadAlarm () {
+      this.isDownloading = false
       const set = { color: 'success', text: 'Download Complete' }
       this.$emit('setSnackbar', set)
     },
