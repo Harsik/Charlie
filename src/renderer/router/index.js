@@ -5,6 +5,10 @@ Vue.use(Router)
 
 export default new Router({
   routes: [{
+    path: '/mapping',
+    name: 'Mapping',
+    component: require('@/components/Mapping').default
+  }, {
     path: '/setting',
     name: 'Setting',
     component: require('@/components/setting').default
@@ -41,15 +45,3 @@ export default new Router({
     redirect: '/'
   }]
 })
-// router.beforeEach((to, from, next) => {
-//   // redirect to login page if not logged in and trying to access a restricted page
-//   const publicPages = ['/login']
-//   const authRequired = !publicPages.includes(to.path)
-//   const loggedIn = localStorage.getItem('user')
-
-//   if (authRequired && !loggedIn) {
-//     return next('/login')
-//   }
-
-//   next()
-// })

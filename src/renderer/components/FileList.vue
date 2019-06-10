@@ -58,14 +58,9 @@
           multiple
           required
         >
-        <v-btn raised class="primary" @click="ondownloadFiles">Download</v-btn>
+        <v-btn raised class="primary" @click="ondownloadFiles" :disabled="isDownloading">Download</v-btn>
         <v-btn raised class="primary" @click="openDownloadFolder">Folder</v-btn>
-        <v-progress-circular
-          :rotate="-90"
-          :value="value"
-          v-if="isDownloading"
-          transition="fade-transition"
-        ></v-progress-circular>
+        <v-progress-circular v-if="isDownloading" transition="fade-transition" indeterminate></v-progress-circular>
       </v-card>
     </v-flex>
   </v-layout>
@@ -77,7 +72,6 @@ const { ipcRenderer } = require('electron')
 export default {
   name: 'FileList',
   data: () => ({
-    value: 0,
     totalBytes: 0,
     receivedBytes: 0,
     isDownloading: false,
@@ -102,6 +96,16 @@ export default {
   }),
   mounted () {
     this.loadFiles()
+    ipcRenderer.on('download progress', (event, progress) => {
+      // console.log(progress) // Progress in fraction, between 0 and 1
+      // const progressInPercentages = progress * 100 // With decimal point and a bunch of numbers
+      let cleanProgressInPercentages = Math.floor(progress * 100) // Without decimal point
+      if (cleanProgressInPercentages === 100) {
+        this.isDownloading = false
+      } else {
+        this.isDownloading = true
+      }
+    })
   },
   computed: {
     pages () {
@@ -130,16 +134,6 @@ export default {
         ipcRenderer.send('download', {
           url: url,
           properties: { directory: dir }
-        })
-        ipcRenderer.on('download progress', (event, progress) => {
-          // console.log(progress) // Progress in fraction, between 0 and 1
-          // const progressInPercentages = progress * 100 // With decimal point and a bunch of numbers
-          let cleanProgressInPercentages = Math.floor(progress * 100) // Without decimal point
-          this.value = cleanProgressInPercentages
-          if (cleanProgressInPercentages === 100) {
-            this.isDownloading = false
-            this.value = 0
-          }
         })
       }
     },
