@@ -64,6 +64,7 @@
           :rotate="-90"
           :value="value"
           v-if="isDownloading"
+          transition="fade-transition"
         ></v-progress-circular>
       </v-card>
     </v-flex>
@@ -122,26 +123,24 @@ export default {
     },
     ondownloadFiles () {
       for (let value of this.selected) {
-        // this.selected.forEach(function (value, key) {
+        this.isDownloading = true
         const fileName = value.name
         let url = 'http://localhost:8080/api/file/downloadFile/' + fileName
-        let dir = 'C:/Users/Achivsoft/Downloads'// + fileName
-        // const file = fs.createWriteStream(dir)
+        let dir = 'C:/Users/Achivsoft/Downloads'
         ipcRenderer.send('download', {
           url: url,
           properties: { directory: dir }
         })
         ipcRenderer.on('download progress', (event, progress) => {
-          this.isDownloading = true
           // console.log(progress) // Progress in fraction, between 0 and 1
-          const progressInPercentages = progress * 100 // With decimal point and a bunch of numbers
-          // const cleanProgressInPercentages = Math.floor(progress * 100) // Without decimal point
-          this.value = progressInPercentages
-          // console.log(progressInPercentages)
-          // console.log(cleanProgressInPercentages)
-          this.isDownloading = false
+          // const progressInPercentages = progress * 100 // With decimal point and a bunch of numbers
+          let cleanProgressInPercentages = Math.floor(progress * 100) // Without decimal point
+          this.value = cleanProgressInPercentages
+          if (cleanProgressInPercentages === 100) {
+            this.isDownloading = false
+            this.value = 0
+          }
         })
-        // })
       }
     },
     deleteFile (fileName) {
