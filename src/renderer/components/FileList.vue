@@ -60,33 +60,23 @@
         >
         <v-btn raised class="primary" @click="ondownloadFiles">Download</v-btn>
         <v-btn raised class="primary" @click="openDownloadFolder">Folder</v-btn>
-        <v-progress-circular v-if="isDownloading" indeterminate></v-progress-circular>
+        <v-progress-circular
+          :rotate="-90"
+          :value="value"
+          v-if="isDownloading"
+        ></v-progress-circular>
       </v-card>
     </v-flex>
   </v-layout>
 </template>
 
 <script>
-// const request = require('request')
-import fs from 'fs'
-
-// import http from 'http'
-
-// function download (url, name) {
-//   // TODO: check if url is duplicated. Sometimes
-//   // OpenSubtitles is returning wrong sub in a TV Show
-//   const file = fs.createWriteStream(name)
-//   return new Promise(resolve => {
-//     http.get(url, response => {
-//       response.pipe(file)
-//       resolve(response)
-//     })
-//   })
-// }
+const { ipcRenderer } = require('electron')
 
 export default {
   name: 'FileList',
   data: () => ({
+    value: 0,
     totalBytes: 0,
     receivedBytes: 0,
     isDownloading: false,
@@ -131,42 +121,28 @@ export default {
       shell.showItemInFolder('C:/Users/Achivsoft/Downloads/*')
     },
     ondownloadFiles () {
-      this.isDownloading = true
-      this.selected.forEach(function (value, key) {
+      for (let value of this.selected) {
+        // this.selected.forEach(function (value, key) {
         const fileName = value.name
         let url = 'http://localhost:8080/api/file/downloadFile/' + fileName
-        let name = 'C:/Users/Achivsoft/Downloads/' + fileName
-        const file = fs.createWriteStream(name)
-        const headers = new Headers({
-          // 'Content-Type': 'application/json'
+        let dir = 'C:/Users/Achivsoft/Downloads'// + fileName
+        // const file = fs.createWriteStream(dir)
+        ipcRenderer.send('download', {
+          url: url,
+          properties: { directory: dir }
         })
-        if (localStorage.accessToken) {
-          headers.append('Authorization', 'Bearer ' + localStorage.accessToken)
-        }
-        fetch(url, {
-          method: 'GET',
-          headers: headers
-        }).then(response => response.body)
-          .then(body => body.pipeThrough(file))
-          // .then(rs => rs.pipeTo(new FinalDestinationStream()))
-        //   .then((
-        //     response // response.ok 값을 남기기 위해 respoense.json().then으로 다시 출력
-        //   ) => {
-        //     console.log(response)
-        //     response.body.pipeThrough(file)
-        //     // this.loadFiles()
-        //   }
-        //   )
-        // .catch(error => {
-        //   console.log(error)
-        //   this.errorAlarm()
+        ipcRenderer.on('download progress', (event, progress) => {
+          this.isDownloading = true
+          // console.log(progress) // Progress in fraction, between 0 and 1
+          const progressInPercentages = progress * 100 // With decimal point and a bunch of numbers
+          // const cleanProgressInPercentages = Math.floor(progress * 100) // Without decimal point
+          this.value = progressInPercentages
+          // console.log(progressInPercentages)
+          // console.log(cleanProgressInPercentages)
+          this.isDownloading = false
+        })
         // })
-        // download(url, name).then(response => {
-        //   console.log(response)
-        // })
-      })
-      this.isDownloading = false
-      this.downloadAlarm()
+      }
     },
     deleteFile (fileName) {
       const headers = new Headers({
@@ -286,7 +262,6 @@ export default {
         })
     },
     downloadAlarm () {
-      this.isDownloading = false
       const set = { color: 'success', text: 'Download Complete' }
       this.$emit('setSnackbar', set)
     },
