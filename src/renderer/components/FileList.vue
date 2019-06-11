@@ -58,7 +58,7 @@
           multiple
           required
         >
-        <v-btn raised class="primary" @click="ondownloadFiles" :disabled="isDownloading">Download</v-btn>
+        <v-btn raised class="primary" @click="onDownloadFiles" :disabled="isDownloading">Download</v-btn>
         <v-btn raised class="primary" @click="openDownloadFolder">Folder</v-btn>
         <v-progress-circular v-if="isDownloading" transition="fade-transition" indeterminate></v-progress-circular>
       </v-card>
@@ -96,16 +96,7 @@ export default {
   }),
   mounted () {
     this.loadFiles()
-    ipcRenderer.on('download progress', (event, progress) => {
-      // console.log(progress) // Progress in fraction, between 0 and 1
-      // const progressInPercentages = progress * 100 // With decimal point and a bunch of numbers
-      let cleanProgressInPercentages = Math.floor(progress * 100) // Without decimal point
-      if (cleanProgressInPercentages === 100) {
-        this.isDownloading = false
-      } else {
-        this.isDownloading = true
-      }
-    })
+    this.setDownloadProgressEvent()
   },
   computed: {
     pages () {
@@ -121,11 +112,23 @@ export default {
     }
   },
   methods: {
+    setDownloadProgressEvent () {
+      ipcRenderer.on('download progress', (event, progress) => {
+        // console.log(progress) // Progress in fraction, between 0 and 1
+        // const progressInPercentages = progress * 100 // With decimal point and a bunch of numbers
+        let cleanProgressInPercentages = Math.floor(progress * 100) // Without decimal point
+        if (cleanProgressInPercentages === 100) {
+          this.isDownloading = false
+        } else {
+          this.isDownloading = true
+        }
+      })
+    },
     openDownloadFolder () {
       const { shell } = require('electron') // deconstructing assignment
       shell.showItemInFolder('C:/Users/Achivsoft/Downloads/*')
     },
-    ondownloadFiles () {
+    onDownloadFiles () {
       for (let value of this.selected) {
         this.isDownloading = true
         const fileName = value.name
@@ -133,7 +136,7 @@ export default {
         let dir = 'C:/Users/Achivsoft/Downloads'
         ipcRenderer.send('download', {
           url: url,
-          properties: { directory: dir }
+          properties: { directory: dir, filename: fileName }
         })
       }
     },

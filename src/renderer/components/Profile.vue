@@ -80,7 +80,6 @@ export default {
             if (!response.ok) {
               return Promise.reject(json)
             }
-            console.log(json)
             this.imageUrl = json.downloadUri
           })
         )

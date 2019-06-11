@@ -14,7 +14,7 @@
         </v-list>
       </v-navigation-drawer>
       <v-toolbar fixed app :clipped-left="clipped">
-        <v-toolbar-side-icon @click.native.stop="drawer = !drawer" :disabled="sideicon"></v-toolbar-side-icon>
+        <v-toolbar-side-icon @click.native.stop="drawer = !drawer" :disabled="!isAuthenticated"></v-toolbar-side-icon>
         <v-toolbar-title v-text="appTitle" @click="openWelcome"></v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items v-if="!isAuthenticated">
@@ -71,7 +71,7 @@ export default {
     isDark: false,
     sideicon: false, // !isAuthenticated
     app: false,
-    appTitle: 'AppTitle',
+    appTitle: 'UnderSeed',
     isAuthenticated: false,
     currentUser: false,
     clipped: false,
@@ -80,7 +80,8 @@ export default {
     navMenus: [
       { icon: 'apps', title: 'Welcome', to: '/' },
       { icon: 'bubble_chart', title: 'Inspire', to: '/inspire' },
-      { icon: 'title', title: 'FileList', to: '/fileList' }
+      { icon: 'title', title: 'FileList', to: '/fileList' },
+      { icon: 'title', title: 'Mapping', to: '/mapping' }
     ],
     subMenus: [
       { title: 'Profile', to: '/profile' },
