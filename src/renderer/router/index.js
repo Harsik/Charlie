@@ -7,7 +7,7 @@ export default new Router({
   routes: [{
     path: '/mapping',
     name: 'Mapping',
-    component: require('@/components/Mapping').default
+    component: require('@/components/mapping').default
   }, {
     path: '/setting',
     name: 'Setting',
