@@ -18,7 +18,7 @@
             :rules="emailRules"
             :error-messages="errors"
             clearable
-            :loading="loadingProgress"
+            :loading="isLoading"
           ></v-text-field>
           <v-text-field
             class="pa-3"
@@ -27,7 +27,7 @@
             :rules="passwordRules"
             type="password"
             hint="At least 8 characters"
-            @keyup.enter="login"
+            @keyup.enter="signup"
             clearable
           ></v-text-field>
           <v-btn color="primary" :disabled="!valid" @click="signup">
@@ -47,7 +47,7 @@ export default {
   name: 'Signup',
   data: () => ({
     // value: '',
-    loadingProgress: false,
+    isLoading: false,
     custom: true,
     headerText: 'This is Signup Page',
     emailAvailable: false,
@@ -82,7 +82,7 @@ export default {
   },
   methods: {
     vertifyEmail: _.debounce(function () {
-      this.loadingProgress = true
+      this.isLoading = true
       fetch(
         'http://localhost:8080/api/account/checkEmailAvailability?email=' +
         this.email,
@@ -103,11 +103,11 @@ export default {
             } else {
               this.errors = ['Email is already taken']
             }
-            this.loadingProgress = false
+            this.isLoading = false
           })
         )
         .catch(() => {
-          this.loadingProgress = false
+          this.isLoading = false
         }
         )
     }, 300),

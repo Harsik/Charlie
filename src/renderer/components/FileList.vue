@@ -1,10 +1,10 @@
 <template>
   <v-layout align-start justify-center row wrap>
     <v-flex xs12 sm12 md12>
+      <v-card class="pa-3">
       <v-toolbar flat color="white">
         <v-toolbar-title>FileList</v-toolbar-title>
       </v-toolbar>
-      <v-card class="pa-3">
         <v-card-title>
           <v-spacer></v-spacer>
           <v-text-field

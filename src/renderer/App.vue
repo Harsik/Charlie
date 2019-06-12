@@ -81,7 +81,8 @@ export default {
       { icon: 'apps', title: 'Welcome', to: '/' },
       { icon: 'bubble_chart', title: 'Inspire', to: '/inspire' },
       { icon: 'title', title: 'FileList', to: '/fileList' },
-      { icon: 'title', title: 'Mapping', to: '/mapping' }
+      { title: 'Address', to: '/address' },
+      { title: 'Mapping', to: '/mapping' }
     ],
     subMenus: [
       { title: 'Profile', to: '/profile' },

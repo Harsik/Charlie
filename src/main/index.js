@@ -45,6 +45,8 @@ function createWindow () {
     mainWindow.show()
   })
 
+  mainWindow.setMenu(null)
+
   ipcMain.on('download', (event, info) => {
     info.properties.onProgress = status =>
       mainWindow.webContents.send('download progress', status)
