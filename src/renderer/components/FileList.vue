@@ -2,9 +2,9 @@
   <v-layout align-start justify-center row wrap>
     <v-flex xs12 sm12 md12>
       <v-card class="pa-3">
-      <v-toolbar flat color="white">
-        <v-toolbar-title>FileList</v-toolbar-title>
-      </v-toolbar>
+        <v-toolbar flat color="white">
+          <v-toolbar-title>FileList</v-toolbar-title>
+        </v-toolbar>
         <v-card-title>
           <v-spacer></v-spacer>
           <v-text-field
@@ -36,18 +36,10 @@
             <td>{{ props.item.size }}</td>
             <td>{{ props.item.updatedAt }}</td>
             <td class="align-center justify-start layout px-0">
-              <v-icon small @click="deleteFile(props.item.name)">delete</v-icon>
+              <v-icon small @click="onDeleteFile(props.item.name)">delete</v-icon>
             </td>
           </template>
-          <!-- <template v-slot:no-results>
-        <v-alert :value='true' color='error' icon='warning'>
-          Your search for '{{ search }}' found no results.
-        </v-alert>
-          </template>-->
         </v-data-table>
-        <!-- <div class='text-xs-center pt-2'>
-          <v-pagination v-model='pagination.page' :length='pages'></v-pagination>
-        </div>-->
         <v-btn raised class="primary" @click="onPickFile">Upload</v-btn>
         <input
           type="file"
@@ -67,7 +59,8 @@
 </template>
 
 <script>
-const { ipcRenderer } = require('electron')
+import { deleteFile, uploadFile, uploadFiles, loadFiles } from './APIUtils'
+import { ipcRenderer, shell } from 'electron'
 
 export default {
   name: 'FileList',
@@ -95,21 +88,8 @@ export default {
     ]
   }),
   mounted () {
-    this.loadFiles()
+    this.onLoadFiles()
     this.setDownloadProgressEvent()
-  },
-  computed: {
-    pages () {
-      if (
-        this.pagination.rowsPerPage == null ||
-        this.pagination.totalItems == null
-      ) {
-        return 0
-      }
-      return Math.ceil(
-        this.pagination.totalItems / this.pagination.rowsPerPage
-      )
-    }
   },
   methods: {
     setDownloadProgressEvent () {
@@ -125,7 +105,6 @@ export default {
       })
     },
     openDownloadFolder () {
-      const { shell } = require('electron') // deconstructing assignment
       shell.showItemInFolder('C:/Users/Achivsoft/Downloads/*')
     },
     onDownloadFiles () {
@@ -140,74 +119,36 @@ export default {
         })
       }
     },
-    deleteFile (fileName) {
-      const headers = new Headers({
-        'Content-Type': 'application/json'
-      })
-      if (localStorage.accessToken) {
-        headers.append('Authorization', 'Bearer ' + localStorage.accessToken)
-      }
-      fetch('http://localhost:8080/api/file/deleteFile?fileName=' + fileName, {
-        method: 'GET',
-        headers: headers
-      })
-        .then((
-          response // response.ok 값을 남기기 위해 respoense.json().then으로 다시 출력
-        ) =>
-          response.json().then(json => {
-            if (!response.ok) {
-              return Promise.reject(json)
-            }
-            this.loadFiles()
-          })
-        )
+    onDeleteFile (fileName) {
+      deleteFile(fileName)
+        .then(response => {
+          this.onLoadFiles()
+        })
         .catch(error => {
           console.log(error)
           this.errorAlarm()
         })
     },
-    uploadFile (file) {
+    onUploadFile (file) {
       let formData = new FormData()
       formData.append('file', file)
-      const headers = new Headers({
-        // 'Content-Type': 'multipart/form-data'
-      })
-
-      if (localStorage.accessToken) {
-        headers.append('Authorization', 'Bearer ' + localStorage.accessToken)
-      }
-      fetch('http://localhost:8080/api/file/uploadFile', {
-        method: 'POST',
-        headers: headers,
-        body: formData
-      })
+      uploadFile(formData)
         .then(response => {
-          this.loadFiles()
+          this.onLoadFiles()
         })
         .catch(error => {
           console.log(error)
           this.errorAlarm()
         })
     },
-    uploadFiles (files) {
+    onUploadFiles (files) {
       let formData = new FormData()
       for (let file in files) {
         formData.append('files', files[file])
       }
-      const headers = new Headers({
-        // 'Content-Type': 'multipart/form-data'
-      })
-
-      if (localStorage.accessToken) {
-        headers.append('Authorization', 'Bearer ' + localStorage.accessToken)
-      }
-      fetch('http://localhost:8080/api/file/uploadMultipleFiles', {
-        method: 'POST',
-        headers: headers,
-        body: formData
-      })
+      uploadFiles(formData)
         .then(response => {
-          this.loadFiles()
+          this.onLoadFiles()
         })
         .catch(error => {
           console.log(error)
@@ -226,32 +167,16 @@ export default {
         this.imageUrl = fileReader.result
       })
       fileReader.readAsDataURL(files[0])
-      this.uploadFiles(files)
+      this.onUploadFiles(files)
     },
     onPickFile () {
       this.$refs.fileInput.click()
     },
-    loadFiles () {
-      const headers = new Headers({
-        'Content-Type': 'application/json'
-      })
-      if (localStorage.accessToken) {
-        headers.append('Authorization', 'Bearer ' + localStorage.accessToken)
-      }
-      fetch('http://localhost:8080/api/file/loadFiles', {
-        method: 'POST',
-        headers: headers
-      })
-        .then((
-          response // response.ok 값을 남기기 위해 respoense.json().then으로 다시 출력
-        ) =>
-          response.json().then(json => {
-            if (!response.ok) {
-              return Promise.reject(json)
-            }
-            this.files = json
-          })
-        )
+    onLoadFiles () {
+      loadFiles()
+        .then(response => {
+          this.files = response
+        })
         .catch(error => {
           console.log(error)
           this.errorAlarm()

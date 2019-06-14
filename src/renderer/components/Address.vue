@@ -20,9 +20,6 @@
             <v-card class="ma-1 pa-3">{{ value.address_name }}</v-card>
           </v-flex>
         </v-layout>
-        <!-- <div class='text-xs-center pt-2'>
-          <v-pagination v-model='pagination.page' :length='pages'></v-pagination>
-        </div>-->
       </v-card>
       <div v-html="html"></div>
     </v-flex>
@@ -30,12 +27,11 @@
 </template>
 
 <script>
-import { REST_API_KEY } from './constants'
+import { searchAddress } from './APIUtils'
 import _ from 'lodash'
 
 export default {
-  props: ['isAuthenticated'],
-  name: 'Logout',
+  name: 'Address',
   data: () => ({
     html: null,
     address: [],
@@ -43,43 +39,21 @@ export default {
     result: null
   }),
   mounted () {
-    // this.searchAddress()
   },
   watch: {
     search: function () {
-      this.searchAddress()
+      this.onSearchAddress()
     }
   },
   methods: {
-    searchAddress: _.debounce(function () {
-      const headers = new Headers({
-        'Content-Type': 'application/json'
-      })
-
-      if (REST_API_KEY) {
-        headers.append('Authorization', 'KakaoAK ' + REST_API_KEY)
-      }
-
-      if (this.search) {
-        fetch('https://dapi.kakao.com/v2/local/search/address.json?query=' + this.search, {
-          method: 'GET',
-          headers: headers
+    onSearchAddress: _.debounce(function () {
+      searchAddress(this.search)
+        .then(response => {
+          this.address = response.documents
         })
-          .then((
-            response // response.ok 값을 남기기 위해 respoense.json().then으로 다시 출력
-          ) =>
-            response.json().then(json => {
-              if (!response.ok) {
-                return Promise.reject(json)
-              }
-              // console.log(json)
-              this.address = json.documents
-            })
-          )
-          .catch(() => {
-            this.errorAlarm()
-          })
-      }
+        .catch(() => {
+          this.errorAlarm()
+        })
     }, 500),
     errorAlarm () {
       const set = { color: 'error', text: 'Server error' }
