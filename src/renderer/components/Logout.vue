@@ -6,10 +6,6 @@
 
 <script>
 export default {
-  props: ['isAuthenticated'],
-  name: 'Logout',
-  data: () => ({
-  }),
   mounted () {
     this.logout()
   },

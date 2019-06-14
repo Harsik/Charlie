@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <v-app v-model="app" :dark="isDark">
+    <v-app :dark="isDark">
       <v-navigation-drawer fixed v-model="drawer" app>
         <v-list>
           <v-list-tile router :to="navMenu.to" :key="i" v-for="(navMenu, i) in navMenus">
@@ -40,8 +40,6 @@
         <v-container fluid fill-height>
           <v-slide-y-transition mode="out-in">
             <router-view
-              :isAuthenticated="isAuthenticated"
-              :isDark="isDark"
               @sendAuthentication="setAuthentication"
               @setSnackbar="setSnackbar"
               @setDark="setDark"
@@ -64,25 +62,20 @@
 
 <script>
 export default {
-  // props: ['currentUser'],
   name: 'Charlie',
   data: () => ({
     isAutoLogin: false,
     isDark: false,
-    sideicon: false, // !isAuthenticated
-    app: false,
     appTitle: 'UnderSeed',
     isAuthenticated: false,
-    currentUser: false,
-    clipped: false,
+    clipped: true,
     drawer: false,
     snackbar: { model: false, color: 'success', timeout: 1500, text: '' },
     navMenus: [
-      { icon: 'apps', title: 'Welcome', to: '/' },
-      { icon: 'bubble_chart', title: 'Inspire', to: '/inspire' },
-      { icon: 'title', title: 'FileList', to: '/fileList' },
-      { title: 'Address', to: '/address' },
-      { title: 'Mapping', to: '/mapping' }
+      { title: 'Welcome', to: '/' },
+      { title: 'Inspire', to: '/inspire' },
+      { title: 'FileList', to: '/fileList' },
+      { title: 'Address', to: '/address' }
     ],
     subMenus: [
       { title: 'Profile', to: '/profile' },
@@ -91,17 +84,22 @@ export default {
     ]
   }),
   mounted () {
-    this.app = true
-    if (localStorage.isDark === 'true') {
-      this.isDark = true
-    }
-    if (localStorage.isAutoLogin === 'true') {
-      if (localStorage.accessToken !== null) {
-        this.isAuthenticated = true
-      }
-    }
+    this.mountDark()
+    this.mountAuth()
   },
   methods: {
+    mountAuth () {
+      if (localStorage.isAutoLogin === 'true') {
+        if (localStorage.accessToken !== null) {
+          this.isAuthenticated = true
+        }
+      }
+    },
+    mountDark () {
+      if (localStorage.isDark === 'true') {
+        this.isDark = true
+      }
+    },
     setDark (bool) {
       this.isDark = bool
     },

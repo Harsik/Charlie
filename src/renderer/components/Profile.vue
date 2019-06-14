@@ -33,7 +33,7 @@
           <v-text-field label="Bio" v-model="profile.bio"></v-text-field>
           <v-text-field label="Company" v-model="profile.company"></v-text-field>
           <v-text-field label="Address" v-model="profile.address"></v-text-field>
-          <v-btn color="primary" :disabled="!valid" @click="editProfile">Edit</v-btn>
+          <v-btn color="primary" :disabled="!valid" @click="onEditProfile">Edit</v-btn>
         </v-form>
       </v-card>
     </v-flex>
@@ -41,6 +41,7 @@
 </template>
 
 <script>
+import { loadAvatar, loadProfile, uploadAvatar, editProfile } from './APIUtils'
 export default {
   props: ['isAuthenticated'],
   name: 'Profile',
@@ -58,66 +59,37 @@ export default {
     }
   }),
   mounted () {
-    this.loadProfile()
-    this.loadAvatar()
+    this.onLoadProfile()
+    this.onLoadAvatar()
   },
   methods: {
-    loadAvatar () {
-      const headers = new Headers({
-        'Content-Type': 'application/json'
-      })
-      if (localStorage.accessToken) {
-        headers.append('Authorization', 'Bearer ' + localStorage.accessToken)
-      }
-      fetch('http://localhost:8080/api/file/loadAvatar?email=' + this.email, {
-        method: 'GET',
-        headers: headers
-      })
-        .then((
-          response // response.ok 값을 남기기 위해 respoense.json().then으로 다시 출력
-        ) =>
-          response.json().then(json => {
-            if (!response.ok) {
-              return Promise.reject(json)
-            }
-            this.imageUrl = json.downloadUri
-          })
-        )
-        .catch(() => {
-          // errorAlarm()
-        })
-    },
-    uploadAvatar (file) {
-      let formData = new FormData()
-      formData.append('file', file)
-      formData.append('email', this.email)
-      // data.append('email', this.email)
-      const headers = new Headers({
-        'Content-Type': 'multipart/form-data'
-      })
-
-      if (localStorage.accessToken) {
-        headers.append('Authorization', 'Bearer ' + localStorage.accessToken)
-      }
-
-      fetch('http://localhost:8080/api/file/uploadAvatar', {
-        // fetch('http://localhost:8080/api/file/uploadFile', {
-        method: 'POST',
-        // headers: headers,
-        body: formData
-      })
+    onLoadAvatar () {
+      loadAvatar(this.email)
         .then(response => {
-          this.loadAvatar()
+          this.imageUrl = response.downloadUri
         })
         .catch(error => {
           console.log(error)
+          this.errorAlarm()
+        })
+    },
+    onUploadAvatar (file) {
+      let formData = new FormData()
+      formData.append('file', file)
+      formData.append('email', this.email)
+      uploadAvatar(formData)
+        .then(response => {
+          this.onLoadAvatar()
+        })
+        .catch(error => {
+          console.log(error)
+          this.errorAlarm()
         })
     },
     onFilePicked (event) {
       const files = event.target.files // file info load
       let filename = files[0].name
-      if (filename.lastIndexOf('.') <= 0) {
-        // filename 유효성 검사
+      if (filename.lastIndexOf('.') <= 0) { // filename 유효성 검사
         return alert('Please pick valid file')
       }
       const fileReader = new FileReader()
@@ -125,67 +97,35 @@ export default {
         this.imageUrl = fileReader.result
       })
       fileReader.readAsDataURL(files[0])
-      this.uploadAvatar(files[0])
+      this.onUploadAvatar(files[0])
     },
     onPickFile () {
       this.$refs.fileInput.click()
     },
-    editProfile () {
-      const headers = new Headers({
-        'Content-Type': 'application/json'
-      })
-
-      if (localStorage.accessToken) {
-        headers.append('Authorization', 'Bearer ' + localStorage.accessToken)
+    onEditProfile () {
+      const signupRequest = {
+        email: this.email,
+        name: this.profile.name,
+        bio: this.profile.bio,
+        company: this.profile.company,
+        address: this.profile.address
       }
-
-      fetch('http://localhost:8080/api/account/profile/edit', {
-        method: 'POST',
-        headers: headers,
-        body: JSON.stringify({
-          email: this.email,
-          name: this.profile.name,
-          bio: this.profile.bio,
-          company: this.profile.company,
-          address: this.profile.address
+      editProfile(signupRequest)
+        .then(response => {
+          this.loadProfile()
         })
-      })
-        .then(response =>
-          response.json().then(json => {
-            if (!response.ok) {
-              return Promise.reject(json)
-            }
-            this.loadProfile()
-          })
-        )
-        .catch(() => {
+        .catch((error) => {
+          console.log(error)
           this.errorAlarm()
         })
     },
-    loadProfile () {
-      const headers = new Headers({
-        'Content-Type': 'application/json'
-      })
-
-      if (localStorage.accessToken) {
-        headers.append('Authorization', 'Bearer ' + localStorage.accessToken)
-      }
-
-      fetch('http://localhost:8080/api/account/profile?email=' + this.email, {
-        method: 'GET',
-        headers: headers
-      })
-        .then((
-          response // response.ok 값을 남기기 위해 respoense.json().then으로 다시 출력
-        ) =>
-          response.json().then(json => {
-            if (!response.ok) {
-              return Promise.reject(json)
-            }
-            this.profile = json
-          })
-        )
-        .catch(() => {
+    onLoadProfile () {
+      loadProfile(this.email)
+        .then(response => {
+          this.profile = response
+        })
+        .catch((error) => {
+          console.log(error)
           this.errorAlarm()
         })
     },

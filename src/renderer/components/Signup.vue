@@ -27,10 +27,10 @@
             :rules="passwordRules"
             type="password"
             hint="At least 8 characters"
-            @keyup.enter="signup"
+            @keyup.enter="onSignup"
             clearable
           ></v-text-field>
-          <v-btn color="primary" :disabled="!valid" @click="signup">
+          <v-btn color="primary" :disabled="!valid" @click="onSignup">
             <v-icon left>assignment_ind</v-icon>Sign up
           </v-btn>
         </v-form>
@@ -40,18 +40,14 @@
 </template>
 
 <script>
+import { checkEmailAvailability, signup } from './APIUtils'
 import _ from 'lodash'
 
 export default {
-  props: ['isAuthenticated'],
   name: 'Signup',
   data: () => ({
-    // value: '',
     isLoading: false,
-    custom: true,
     headerText: 'This is Signup Page',
-    emailAvailable: false,
-    loading: true,
     valid: true,
     email: '',
     errors: [],
@@ -72,45 +68,41 @@ export default {
       this.vertifyEmail()
     }
   },
-  computed: {
-    // progress () {
-    //   return Math.min(100, this.value.length * 10)
-    // },
-    // color () {
-    //   return ['error', 'warning', 'success'][Math.floor(this.progress / 40)]
-    // }
-  },
   methods: {
     vertifyEmail: _.debounce(function () {
       this.isLoading = true
-      fetch(
-        'http://localhost:8080/api/account/checkEmailAvailability?email=' +
-        this.email,
-        {
-          method: 'GET'
-        }
-      )
-        .then((
-          response // response.ok 값을 남기기 위해 respoense.json().then으로 다시 출력
-        ) =>
-          response.json().then(json => {
-            if (!response.ok) {
-              return Promise.reject(json)
-            }
-            this.emailAvailable = json.available
-            if (json.available) {
-              this.errors = []
-            } else {
-              this.errors = ['Email is already taken']
-            }
-            this.isLoading = false
-          })
-        )
+      checkEmailAvailability(this.email)
+        .then(response => {
+          if (response.available) {
+            this.errors = []
+          } else {
+            this.errors = ['Email is already taken']
+          }
+          this.isLoading = false
+        })
         .catch(() => {
           this.isLoading = false
-        }
-        )
+        })
     }, 300),
+    onSignup () {
+      if (this.$refs.form.validate()) {
+        localStorage.email = this.email
+        const signupRequest = {
+          email: this.email,
+          password: this.password
+        }
+        signup(signupRequest)
+          .then(response => {
+            localStorage.accessToken = response.accessToken
+            this.signupSuccessAlarm()
+            this.$router.push('/login')
+          })
+          .catch((error) => {
+            console.log(error)
+            this.signupFailAlarm()
+          })
+      }
+    },
     signupSuccessAlarm () {
       const set = { color: 'success', text: 'Signup Successful' }
       this.$emit('setSnackbar', set)
@@ -122,40 +114,6 @@ export default {
     emaillNotAbleAlarm () {
       const set = { color: 'error', text: 'Email is already taken' }
       this.$emit('setSnackbar', set)
-    },
-    signup () {
-      if (this.$refs.form.validate()) {
-        localStorage.email = this.email
-        // localStorage.password = this.password
-        const headers = new Headers({
-          'Content-Type': 'application/json'
-        })
-        fetch('http://localhost:8080/api/auth/signup', {
-          method: 'POST',
-          headers: headers,
-          body: JSON.stringify({
-            email: this.email,
-            password: this.password
-          })
-        })
-          .then((
-            response // response.ok 값을 남기기 위해 respoense.json().then으로 다시 출력
-          ) =>
-            response.json().then(json => {
-              if (!response.ok) {
-                return Promise.reject(json)
-              }
-              localStorage.accessToken = json.accessToken
-              // this.$emit('sendAuthentication', true)
-              this.signupSuccessAlarm()
-              this.$router.push('/login')
-            })
-          )
-          .catch(() => {
-            this.signupFailAlarm()
-            // console.log(error)
-          })
-      }
     }
   }
 }
