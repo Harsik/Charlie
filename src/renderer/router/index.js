@@ -1,10 +1,27 @@
 import Vue from 'vue'
 import Router from 'vue-router'
+import Mapping1 from '@/components/Mapping1.html'
+// import Mapping2 from '@/components/Mapping2'
 
 Vue.use(Router)
 
 export default new Router({
   routes: [
+    // {
+    //   path: '/Mapping2',
+    //   name: 'Mapping2',
+    //   component: Mapping2
+    // },
+    {
+      path: '/Mapping1',
+      name: 'Mapping1',
+      component: { template: Mapping1 }
+    },
+    {
+      path: '/Mapping',
+      name: 'Mapping',
+      component: require('@/components/Mapping').default
+    },
     {
       path: '/address',
       name: 'Address',

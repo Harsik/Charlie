@@ -20,6 +20,14 @@ let mainConfig = {
 	],
 	module: {
 		rules: [
+			// // { test: /\.html$/, use: 'vue-template-loader' },
+			{
+				test: /\.(html)$/,
+				exclude: /(node_modules)/,
+				use: {
+					loader: 'html-loader'
+				}
+			},
 			{
 				test: /\.(js)$/,
 				enforce: 'pre',
