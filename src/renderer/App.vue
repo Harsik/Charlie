@@ -75,10 +75,7 @@ export default {
       { title: 'Welcome', to: '/' },
       { title: 'Inspire', to: '/inspire' },
       { title: 'FileList', to: '/fileList' },
-      { title: 'Address', to: '/address' },
-      { title: 'Mapping', to: '/Mapping' },
-      { title: 'Mapping1', to: '/Mapping1' },
-      { title: 'Mapping2', to: '/Mapping2' }
+      { title: 'Address', to: '/address' }
     ],
     subMenus: [
       { title: 'Profile', to: '/profile' },
