@@ -14,7 +14,7 @@ import _ from 'lodash'
 export default {
   name: 'Mapping',
   data: () => ({
-    html: '<div id="map" style="width:500px;height:400px;">\n</div>\n<script id="srcScript" type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=9d9d934e871cf40eb66f5f25f178af76">\n</scr' + 'ipt>\n<script id="codeScript"> \n var container = document.getElementById("map")\n var options = { \n center: new daum.maps.LatLng(33.450701, 126.570667), \n level: 3 \n }\n var map = new daum.maps.Map(container, options)\n</sc' + 'ript>',
+    html: null, // '<div id="map" style="width:500px;height:400px;">\n</div>\n<script id="srcScript" type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=9d9d934e871cf40eb66f5f25f178af76">\n</scr' + 'ipt>\n<script id="codeScript"> \n var container = document.getElementById("map")\n var options = { \n center: new daum.maps.LatLng(33.450701, 126.570667), \n level: 3 \n }\n var map = new daum.maps.Map(container, options)\n</sc' + 'ript>',
     // html: '<div id="map" style="width:500px;height:400px;">\n</div>\n<script id="srcScript" type="text/javascript">\n</scr' + 'ipt>\n<script id="codeScript"></sc' + 'ript>',
     address: [],
     search: null,
@@ -27,8 +27,8 @@ export default {
     // document.head.appendChild(ckeditor)
   },
   mounted () {
-    this.scriptsDone2()
-    this.scriptsDone3()
+    // this.scriptsDone2()
+    // this.scriptsDone3()
   },
   computed: {
     dynamicComponent: function () {

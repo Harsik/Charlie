@@ -75,7 +75,8 @@ export default {
       { title: 'Welcome', to: '/' },
       { title: 'Inspire', to: '/inspire' },
       { title: 'FileList', to: '/fileList' },
-      { title: 'Address', to: '/address' }
+      { title: 'Address', to: '/address' },
+      { title: 'Chatting', to: '/Chatting' }
     ],
     subMenus: [
       { title: 'Profile', to: '/profile' },

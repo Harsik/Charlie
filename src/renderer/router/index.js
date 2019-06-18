@@ -6,6 +6,11 @@ Vue.use(Router)
 export default new Router({
   routes: [
     {
+      path: '/Chatting',
+      name: 'Chatting',
+      component: require('@/components/Chatting').default
+    },
+    {
       path: '/Mapping',
       name: 'Mapping',
       component: require('@/components/Mapping').default
