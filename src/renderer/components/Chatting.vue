@@ -65,6 +65,9 @@
 
 <script>
 import SockJS from 'sockjs-client'
+// import Stomp from '@stomp/stompjs/esm5'
+// import io from 'socket.io-client'
+// import client from '@stomp/stompjs/esm5/client'
 import Stomp from 'webstomp-client'
 
 export default {
@@ -83,12 +86,16 @@ export default {
     send () {
       // console.log('Send message:' + this.send_message)
       if (this.stompClient && this.stompClient.connected) {
-        const msg = { type: 'JOIN', sender: this.email, content: this.send_message }
-        this.stompClient.send('/app/chat.sendMessage', {}, JSON.stringify(msg))
+        const msg = { type: 'CHAT', sender: this.email, content: this.send_message }
+        this.stompClient.send('/app/chat.sendMessage', JSON.stringify(msg), {})
       }
     },
     connect () {
+      // this.socket = io('http://localhost:8080/ws')
       this.socket = new SockJS('http://localhost:8080/ws')
+      // const url = 'http://localhost:8080/ws'
+      // const url = 'ws://localhost:61614/stomp'
+      // this.stompClient = Stomp.Client(url)
       this.stompClient = Stomp.over(this.socket)
       this.stompClient.connect({}, this.onConnected, this.errorAlarm)
       // this.stompClient.connect(
@@ -115,11 +122,14 @@ export default {
     onConnected () {
       // Subscribe to the Public Topic
       this.stompClient.subscribe('/topic/public', this.onMessageReceived)
-
+      // this.stompClient.subscribe('/topic/public', tick => {
+      //   // console.log(tick)
+      //   this.received_messages.push(JSON.parse(tick.body).content)
+      // })
       // Tell your username to the server
       this.stompClient.send('/app/chat.addUser',
-        {},
-        JSON.stringify({ sender: this.email, type: 'JOIN' })
+        JSON.stringify({ sender: this.email, type: 'JOIN' },
+          {})
       )
     },
     onMessageReceived (payload) {
@@ -168,7 +178,7 @@ export default {
           content: this.send_message,
           type: 'CHAT'
         }
-        this.stompClient.send('/app/chat.sendMessage', {}, JSON.stringify(chatMessage))
+        this.stompClient.send('/app/chat.sendMessage', JSON.stringify(chatMessage), {})
         this.send_message = ''
       }
       // event.preventDefault()
