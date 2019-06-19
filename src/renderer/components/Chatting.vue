@@ -1,69 +1,21 @@
-<template>
+  <template>
   <v-layout align-start justify-center>
     <v-flex xs12 sm12 md12>
-      <div>
-        <div id="main-content" class="container">
-          <div class="row">
-            <div class="col-md-6">
-              <form class="form-inline">
-                <div class="form-group">
-                  <label for="connect">WebSocket connection:</label>
-                  <button
-                    id="connect"
-                    class="btn btn-default"
-                    type="submit"
-                    :disabled="connected == true"
-                    @click.prevent="connect"
-                  >Connect</button>
-                  <button
-                    id="disconnect"
-                    class="btn btn-default"
-                    type="submit"
-                    :disabled="connected == false"
-                    @click.prevent="disconnect"
-                  >Disconnect</button>
-                </div>
-              </form>
-            </div>
-            <div class="col-md-6">
-              <form class="form-inline">
-                <div class="form-group">
-                  <label for="name">What is your name?</label>
-                  <input
-                    type="text"
-                    id="name"
-                    class="form-control"
-                    v-model="send_message"
-                    placeholder="Your name here..."
-                  >
-                </div>
-                <button id="send" class="btn btn-default" type="submit" @click.prevent="send">Send</button>
-              </form>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-12">
-              <table id="conversation" class="table table-striped">
-                <thead>
-                  <tr>
-                    <th>Greetings</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="item in received_messages" :key="item">
-                    <td>{{ item }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+      <v-card class="pa-3 ma-1">
+        <div  v-for="message of received_messages" :key="message.id">
+        <tr>
+          <td class="pa-1">{{ message.sender }}</td>
+          <td class="pa-1">{{ message.content }}</td>
+        </tr>
+        <v-divider></v-divider>
         </div>
-      </div>
+        <v-text-field v-model="send_message" @keydown.enter="sendMessage"></v-text-field>
+      </v-card>
     </v-flex>
   </v-layout>
 </template>
 
-<script>
+  <script>
 import SockJS from 'sockjs-client'
 // import Stomp from '@stomp/stompjs/esm5'
 // import io from 'socket.io-client'
@@ -83,13 +35,6 @@ export default {
     this.connect()
   },
   methods: {
-    send () {
-      // console.log('Send message:' + this.send_message)
-      if (this.stompClient && this.stompClient.connected) {
-        const msg = { type: 'CHAT', sender: this.email, content: this.send_message }
-        this.stompClient.send('/app/chat.sendMessage', JSON.stringify(msg), {})
-      }
-    },
     connect () {
       // this.socket = io('http://localhost:8080/ws')
       this.socket = new SockJS('http://localhost:8080/ws')
@@ -138,27 +83,32 @@ export default {
       console.log(message)
       // var messageElement = document.createElement('li')
 
-      // if (message.type === 'JOIN') {
-      //   messageElement.classList.add('event-message')
-      //   message.content = message.sender + ' joined!'
-      // } else if (message.type === 'LEAVE') {
-      //   messageElement.classList.add('event-message')
-      //   message.content = message.sender + ' left!'
-      // } else {
-      //   messageElement.classList.add('chat-message')
+      if (message.type === 'JOIN') {
+        // this.received_messages.push('event-message')
+        message.content = message.sender + ' joined!'
+        // this.received_messages.push(message.content)
+        this.received_messages.push(message)
+      } else if (message.type === 'LEAVE') {
+        // this.received_messages.push('event-message')
+        message.content = message.sender + ' left!'
+        // this.received_messages.push(message.content)
+        this.received_messages.push(message)
+      } else {
+        // this.received_messages.push('chat-message')
+        this.received_messages.push(message)
+        // this.received_messages.push(message.content)
+        // var avatarElement = document.createElement('i')
+        // var avatarText = document.createTextNode(message.sender[0])
+        // avatarElement.appendChild(avatarText)
+        // avatarElement.style['background-color'] = getAvatarColor(message.sender)
 
-      //   var avatarElement = document.createElement('i')
-      //   var avatarText = document.createTextNode(message.sender[0])
-      //   avatarElement.appendChild(avatarText)
-      //   avatarElement.style['background-color'] = getAvatarColor(message.sender)
+        // this.received_messages.push.appendChild(avatarElement)
 
-      //   messageElement.appendChild(avatarElement)
-
-      //   var usernameElement = document.createElement('span')
-      //   var usernameText = document.createTextNode(message.sender)
-      //   usernameElement.appendChild(usernameText)
-      //   messageElement.appendChild(usernameElement)
-      // }
+        // var usernameElement = document.createElement('span')
+        // var usernameText = document.createTextNode(message.sender)
+        // usernameElement.appendChild(usernameText)
+        // messageElement.appendChild(usernameElement)
+      }
 
       // var textElement = document.createElement('p')
       // var messageText = document.createTextNode(message.content)
@@ -169,8 +119,11 @@ export default {
       // messageArea.appendChild(messageElement)
       // messageArea.scrollTop = messageArea.scrollHeight
     },
-    sendMessage (event) {
+    sendMessage () {
       // var messageContent = messageInput.value.trim()
+      console.log(this.send_message && this.stompClient)
+      console.log(this.send_message)
+      console.log(this.stompClient)
       if (this.send_message && this.stompClient) {
         var chatMessage = {
           sender: this.email,
@@ -178,6 +131,7 @@ export default {
           content: this.send_message,
           type: 'CHAT'
         }
+        console.log(chatMessage)
         this.stompClient.send('/app/chat.sendMessage', JSON.stringify(chatMessage), {})
         this.send_message = ''
       }
@@ -198,4 +152,4 @@ export default {
     }
   }
 }
-</script>
+  </script>
