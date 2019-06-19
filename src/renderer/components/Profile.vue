@@ -112,7 +112,7 @@ export default {
       }
       editProfile(signupRequest)
         .then(response => {
-          this.loadProfile()
+          this.onLoadProfile()
         })
         .catch((error) => {
           console.log(error)
