@@ -1,14 +1,29 @@
-  <template>
+  // <template>
   <v-layout align-start justify-center row>
     <v-flex fill-height>
-      <v-card
-        id="container"
-        class="pa-3 ma-1"
-        style="overflow-y: auto;"
-        :style="{
-            'height': `${chatHeight}`
-     }"
-      >
+      <!-- <v-container fluid column wrap height="80%" style="overflow-y: auto;">
+            <v-flex
+               v-for="message of received_messages" :key="message.id"
+            >
+              <v-card flat tile v-if="message.sender !== email">
+                <v-flex text-xs-left>
+              <v-avatar :tile="false" :size="30" color="grey lighten-4">
+                <img :src="message.avatarUrl" alt="avatar">
+              </v-avatar>
+              <div class="pa-2">{{ message.sender }}</div>
+              <v-divider vertical></v-divider>
+              <div class="pa-2">{{ message.content }}</div>
+            </v-flex>
+              </v-card>
+              <v-card v-else>
+            <v-flex text-xs-right>
+              <div class="pa-2">{{ message.content }}</div>
+            </v-flex>
+          </v-card>
+          <v-divider></v-divider>
+            </v-flex>
+      </v-container>-->
+      <v-card class="pa-3 ma-1" style="overflow-y: auto;" height="80%">
         <div v-for="message of received_messages" :key="message.id">
           <div v-if="message.sender !== email">
             <v-flex text-xs-left>
@@ -28,9 +43,8 @@
           <v-divider></v-divider>
         </div>
       </v-card>
-      <v-spacer></v-spacer>
       <v-card class="pa-3 ma-1" height="20%">
-        <v-text-field v-model="message" @keydown.enter="sendMessage"></v-text-field>
+        <v-text-field v-model="send_message" @keydown.enter="sendMessage" v-focus></v-text-field>
       </v-card>
     </v-flex>
   </v-layout>
@@ -39,67 +53,22 @@
   <script>
 import SockJS from 'sockjs-client'
 import Stomp from 'webstomp-client'
-import { ipcRenderer } from 'electron'
 
 export default {
   name: 'Chatting',
   data: () => ({
-    height: this.imageHeight,
     imageUrl: null,
     email: localStorage.email,
     stompClient: null,
     received_messages: [],
-    message: null,
+    send_message: null,
     connected: false
   }),
-  // watch: function () {
-  //   this.$nextTick(function () {
-  //     const container = this.$el.querySelector('#container')
-  //     container.scrollTop = container.scrollHeight
-  //   })
-  // },
   mounted () {
-    this.connect()
-  },
-  computed: {
-    chatHeight () {
-      switch (this.$vuetify.breakpoint.name) {
-        case 'xs': return '220px'
-        case 'sm': return '400px'
-        case 'md': return '500px'
-        case 'lg': return '600px'
-        case 'xl': return '800px'
-      }
-    }
+    // this.connect()
+    // this.openChat()
   },
   methods: {
-    scrollToEnd () {
-      this.$nextTick(function () {
-        const container = this.$el.querySelector('#container')
-        container.scrollTop = container.scrollHeight
-      })
-      // const container = this.$el.querySelector('#container')
-      // container.scrollTop = container.scrollHeight
-    },
-    openChat () {
-      ipcRenderer.send('openChat', (event, progress) => {
-      })
-
-      // const winUrl = process.env.NODE_ENV === 'development' ? `http://localhost:9080/#/ChatWindow` : `file://${__dirname}/index.html#ChatWindow`
-
-      // this.availableWindows[1] = new BrowserWindow({
-      //   x: -8,
-      //   y: 0,
-      //   height: 500,
-      //   width: 500,
-      //   useContentSize: true,
-      //   show: false
-      // })
-      // this.availableWindows[1].loadURL(winUrl)
-      // this.availableWindows[1].on('closed', () => {
-      //   this.availableWindows[1] = null
-      // })
-    },
     connect () {
       this.socket = new SockJS('http://localhost:8080/ws')
       this.stompClient = Stomp.over(this.socket)
@@ -124,19 +93,31 @@ export default {
         message.content = 'left!'
         this.received_messages.push(message)
       } else {
+        // this.received_messages.push('chat-message')
         this.received_messages.push(message)
+        // this.received_messages.push(message.content)
+        // var avatarElement = document.createElement('i')
+        // var avatarText = document.createTextNode(message.sender[0])
+        // avatarElement.appendChild(avatarText)
+        // avatarElement.style['background-color'] = getAvatarColor(message.sender)
+
+        // this.received_messages.push.appendChild(avatarElement)
+
+        // var usernameElement = document.createElement('span')
+        // var usernameText = document.createTextNode(message.sender)
+        // usernameElement.appendChild(usernameText)
+        // messageElement.appendChild(usernameElement)
       }
-      this.scrollToEnd()
     },
     sendMessage () {
-      if (this.message && this.stompClient) {
+      if (this.send_message && this.stompClient) {
         var chatMessage = {
           sender: this.email,
-          content: this.message,
+          content: this.send_message,
           type: 'CHAT'
         }
         this.stompClient.send('/app/chat.sendMessage', JSON.stringify(chatMessage), {})
-        this.message = ''
+        this.send_message = ''
       }
     },
     disconnect () {

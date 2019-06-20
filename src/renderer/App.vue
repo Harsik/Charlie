@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <v-app :dark="isDark">
-      <v-navigation-drawer fixed v-model="drawer" app>
+      <v-navigation-drawer floating fixed v-model="drawer" app>
         <v-list>
           <v-list-tile router :to="navMenu.to" :key="i" v-for="(navMenu, i) in navMenus">
             <v-list-tile-action>
