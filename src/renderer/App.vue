@@ -40,7 +40,9 @@
         <v-container fluid fill-height>
           <v-slide-y-transition mode="out-in">
             <router-view
+              :isChatJoin='isChatJoin'
               @sendAuthentication="setAuthentication"
+              @setChatJoin="setChatJoin"
               @setSnackbar="setSnackbar"
               @setDark="setDark"
             ></router-view>
@@ -64,6 +66,7 @@
 export default {
   name: 'Charlie',
   data: () => ({
+    isChatJoin: false,
     isAutoLogin: false,
     isDark: false,
     appTitle: 'UnderSeed',
@@ -111,6 +114,9 @@ export default {
       this.snackbar.model = true
       this.snackbar.color = set.color
       this.snackbar.text = set.text
+    },
+    setChatJoin (bool) {
+      this.isChatJoin = bool
     },
     openWelcome () {
       this.$router.push('/welcome')

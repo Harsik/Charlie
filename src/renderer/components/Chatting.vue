@@ -11,14 +11,19 @@
       >
         <div v-for="message of received_messages" :key="message.id">
           <div v-if="message.sender !== email">
-            <v-flex text-xs-left>
-              <v-avatar :tile="false" :size="30" color="grey lighten-4">
+            <v-layout align-center justify-start row>
+              <v-avatar
+                v-if="message.avatarUrl !== null"
+                :tile="false"
+                :size="30"
+                color="grey lighten-4"
+              >
                 <img :src="message.avatarUrl" alt="avatar">
               </v-avatar>
               <div class="pa-2">{{ message.sender }}</div>
-              <v-divider vertical></v-divider>
+              <!-- <v-divider vertical></v-divider> -->
               <div class="pa-2">{{ message.content }}</div>
-            </v-flex>
+            </v-layout>
           </div>
           <div v-else>
             <v-flex text-xs-right>
@@ -41,25 +46,25 @@ import SockJS from 'sockjs-client'
 import Stomp from 'webstomp-client'
 import { ipcRenderer } from 'electron'
 
+const socket = new SockJS('http://localhost:8080/ws')
+const stompClient = Stomp.over(socket)
+
 export default {
+  props: ['isChatJoin'],
   name: 'Chatting',
   data: () => ({
     height: this.imageHeight,
     imageUrl: null,
     email: localStorage.email,
-    stompClient: null,
     received_messages: [],
     message: null,
     connected: false
   }),
-  // watch: function () {
-  //   this.$nextTick(function () {
-  //     const container = this.$el.querySelector('#container')
-  //     container.scrollTop = container.scrollHeight
-  //   })
-  // },
   mounted () {
-    this.connect()
+    if (!this.isChatJoin) {
+      this.connect()
+      this.setChatJoin(true)
+    }
   },
   computed: {
     chatHeight () {
@@ -78,8 +83,6 @@ export default {
         const container = this.$el.querySelector('#container')
         container.scrollTop = container.scrollHeight
       })
-      // const container = this.$el.querySelector('#container')
-      // container.scrollTop = container.scrollHeight
     },
     openChat () {
       ipcRenderer.send('openChat', (event, progress) => {
@@ -101,22 +104,28 @@ export default {
       // })
     },
     connect () {
-      this.socket = new SockJS('http://localhost:8080/ws')
-      this.stompClient = Stomp.over(this.socket)
-      this.stompClient.connect({}, this.onConnected, this.errorAlarm)
+      // this.socket = new SockJS('http://localhost:8080/ws')
+      // this.stompClient = Stomp.over(this.socket)
+      // this.stompClient.connect({}, this.onConnected, this.errorAlarm)
+      stompClient.connect({}, this.onConnected, this.errorAlarm)
     },
     onConnected () {
       // Subscribe to the Public Topic
-      this.stompClient.subscribe('/topic/public', this.onMessageReceived)
+      // this.stompClient.subscribe('/topic/public', this.onMessageReceived)
+      stompClient.subscribe('/topic/public', this.onMessageReceived)
       // Tell your username to the server
-      this.stompClient.send('/app/chat.addUser',
+      // this.stompClient.send('/app/chat.addUser',
+      //   JSON.stringify({ sender: this.email, type: 'JOIN' },
+      //     {})
+      // )
+      stompClient.send('/app/chat.addUser',
         JSON.stringify({ sender: this.email, type: 'JOIN' },
           {})
       )
     },
     onMessageReceived (payload) {
       const message = JSON.parse(payload.body)
-
+      console.log(message)
       if (message.type === 'JOIN') {
         message.content = 'joined!'
         this.received_messages.push(message)
@@ -129,13 +138,14 @@ export default {
       this.scrollToEnd()
     },
     sendMessage () {
-      if (this.message && this.stompClient) {
+      if (this.message && stompClient) {
         var chatMessage = {
           sender: this.email,
           content: this.message,
           type: 'CHAT'
         }
-        this.stompClient.send('/app/chat.sendMessage', JSON.stringify(chatMessage), {})
+        // this.stompClient.send('/app/chat.sendMessage', JSON.stringify(chatMessage), {})
+        stompClient.send('/app/chat.sendMessage', JSON.stringify(chatMessage), {})
         this.message = ''
       }
     },
@@ -144,6 +154,10 @@ export default {
         this.stompClient.disconnect()
       }
       this.connected = false
+      this.setChatJoin(true)
+    },
+    setChatJoin (bool) {
+      this.$emit('setChatJoin', bool)
     },
     errorAlarm () {
       const set = { color: 'error', text: 'Could not connect to WebSocket server. Please refresh this page to try again!' }
