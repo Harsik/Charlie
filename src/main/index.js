@@ -29,10 +29,10 @@ function createWindow () {
     height: 1000,
     useContentSize: true,
     width: 1000,
-    show: false
-    // webPreferences: {
-    //   devTools: false
-    // }
+    show: false,
+    webPreferences: {
+      devTools: true
+    }
   })
 
   mainWindow.loadURL(winURL)

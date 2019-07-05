@@ -18,7 +18,7 @@
                 :size="30"
                 color="grey lighten-4"
               >
-                <img :src="message.avatarUrl" alt="avatar">
+                <img :src="message.avatarUrl" alt="avatar" />
               </v-avatar>
               <div class="pa-2">{{ message.sender }}</div>
               <!-- <v-divider vertical></v-divider> -->
@@ -46,13 +46,15 @@ import SockJS from 'sockjs-client'
 import Stomp from 'webstomp-client'
 import { ipcRenderer } from 'electron'
 
-const socket = new SockJS('http://localhost:8080/ws')
-const stompClient = Stomp.over(socket)
+// const socket = new SockJS('http://localhost:8080/ws')
+// const stompClient = Stomp.over(socket)
 
 export default {
   props: ['isChatJoin'],
   name: 'Chatting',
   data: () => ({
+    socket: null,
+    stompClient: null,
     height: this.imageHeight,
     imageUrl: null,
     email: localStorage.email,
@@ -61,10 +63,19 @@ export default {
     connected: false
   }),
   mounted () {
-    if (!this.isChatJoin) {
-      this.connect()
-      this.setChatJoin(true)
-    }
+    this.connect()
+    // if (!this.isChatJoin) {
+    //   this.connect()
+    //   this.setChatJoin(true)
+    // }
+  },
+  beforeDestroy () {
+    this.disconnect()
+    // this.connect()
+    // if (!this.isChatJoin) {
+    //   this.connect()
+    //   this.setChatJoin(true)
+    // }
   },
   computed: {
     chatHeight () {
@@ -104,48 +115,49 @@ export default {
       // })
     },
     connect () {
-      // this.socket = new SockJS('http://localhost:8080/ws')
-      // this.stompClient = Stomp.over(this.socket)
-      // this.stompClient.connect({}, this.onConnected, this.errorAlarm)
-      stompClient.connect({}, this.onConnected, this.errorAlarm)
+      this.socket = new SockJS('http://localhost:8080/ws')
+      this.stompClient = Stomp.over(this.socket)
+      this.stompClient.connect({}, this.onConnected, this.errorAlarm)
+      // stompClient.connect({}, this.onConnected, this.errorAlarm)
     },
     onConnected () {
       // Subscribe to the Public Topic
-      // this.stompClient.subscribe('/topic/public', this.onMessageReceived)
-      stompClient.subscribe('/topic/public', this.onMessageReceived)
+      this.stompClient.subscribe('/topic/public', this.onMessageReceived)
+      // stompClient.subscribe('/topic/public', this.onMessageReceived)
       // Tell your username to the server
-      // this.stompClient.send('/app/chat.addUser',
-      //   JSON.stringify({ sender: this.email, type: 'JOIN' },
-      //     {})
-      // )
-      stompClient.send('/app/chat.addUser',
+      this.stompClient.send('/app/chat.addUser',
         JSON.stringify({ sender: this.email, type: 'JOIN' },
           {})
       )
+      // stompClient.send('/app/chat.addUser',
+      //   JSON.stringify({ sender: this.email, type: 'JOIN' },
+      //     {})
+      // )
     },
     onMessageReceived (payload) {
       const message = JSON.parse(payload.body)
-      console.log(message)
       if (message.type === 'JOIN') {
         message.content = 'joined!'
         this.received_messages.push(message)
+        this.connected = true
       } else if (message.type === 'LEAVE') {
         message.content = 'left!'
         this.received_messages.push(message)
       } else {
         this.received_messages.push(message)
+        console.log(message)
       }
       this.scrollToEnd()
     },
     sendMessage () {
-      if (this.message && stompClient) {
+      if (this.message && this.stompClient) {
         var chatMessage = {
           sender: this.email,
           content: this.message,
           type: 'CHAT'
         }
         // this.stompClient.send('/app/chat.sendMessage', JSON.stringify(chatMessage), {})
-        stompClient.send('/app/chat.sendMessage', JSON.stringify(chatMessage), {})
+        this.stompClient.send('/app/chat.sendMessage', JSON.stringify(chatMessage), {})
         this.message = ''
       }
     },
@@ -154,7 +166,7 @@ export default {
         this.stompClient.disconnect()
       }
       this.connected = false
-      this.setChatJoin(true)
+      // this.setChatJoin(true)
     },
     setChatJoin (bool) {
       this.$emit('setChatJoin', bool)
