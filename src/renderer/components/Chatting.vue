@@ -35,7 +35,7 @@
       </v-card>
       <v-spacer></v-spacer>
       <v-card class="pa-3 ma-1" height="20%">
-        <v-text-field v-model="message" @keydown.enter="sendMessage"></v-text-field>
+        <v-text-field v-model="message" @keydown.enter="sendMessage" clearable :loading="!connected"></v-text-field>
       </v-card>
     </v-flex>
   </v-layout>
@@ -64,18 +64,9 @@ export default {
   }),
   mounted () {
     this.connect()
-    // if (!this.isChatJoin) {
-    //   this.connect()
-    //   this.setChatJoin(true)
-    // }
   },
   beforeDestroy () {
     this.disconnect()
-    // this.connect()
-    // if (!this.isChatJoin) {
-    //   this.connect()
-    //   this.setChatJoin(true)
-    // }
   },
   computed: {
     chatHeight () {
@@ -98,41 +89,20 @@ export default {
     openChat () {
       ipcRenderer.send('openChat', (event, progress) => {
       })
-
-      // const winUrl = process.env.NODE_ENV === 'development' ? `http://localhost:9080/#/ChatWindow` : `file://${__dirname}/index.html#ChatWindow`
-
-      // this.availableWindows[1] = new BrowserWindow({
-      //   x: -8,
-      //   y: 0,
-      //   height: 500,
-      //   width: 500,
-      //   useContentSize: true,
-      //   show: false
-      // })
-      // this.availableWindows[1].loadURL(winUrl)
-      // this.availableWindows[1].on('closed', () => {
-      //   this.availableWindows[1] = null
-      // })
     },
     connect () {
       this.socket = new SockJS('http://localhost:8080/ws')
       this.stompClient = Stomp.over(this.socket)
       this.stompClient.connect({}, this.onConnected, this.errorAlarm)
-      // stompClient.connect({}, this.onConnected, this.errorAlarm)
     },
     onConnected () {
       // Subscribe to the Public Topic
       this.stompClient.subscribe('/topic/public', this.onMessageReceived)
-      // stompClient.subscribe('/topic/public', this.onMessageReceived)
       // Tell your username to the server
       this.stompClient.send('/app/chat.addUser',
         JSON.stringify({ sender: this.email, type: 'JOIN' },
           {})
       )
-      // stompClient.send('/app/chat.addUser',
-      //   JSON.stringify({ sender: this.email, type: 'JOIN' },
-      //     {})
-      // )
     },
     onMessageReceived (payload) {
       const message = JSON.parse(payload.body)
@@ -145,7 +115,6 @@ export default {
         this.received_messages.push(message)
       } else {
         this.received_messages.push(message)
-        console.log(message)
       }
       this.scrollToEnd()
     },
@@ -156,7 +125,6 @@ export default {
           content: this.message,
           type: 'CHAT'
         }
-        // this.stompClient.send('/app/chat.sendMessage', JSON.stringify(chatMessage), {})
         this.stompClient.send('/app/chat.sendMessage', JSON.stringify(chatMessage), {})
         this.message = ''
       }
@@ -166,7 +134,6 @@ export default {
         this.stompClient.disconnect()
       }
       this.connected = false
-      // this.setChatJoin(true)
     },
     setChatJoin (bool) {
       this.$emit('setChatJoin', bool)

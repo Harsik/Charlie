@@ -40,9 +40,7 @@
         <v-container fluid fill-height>
           <v-slide-y-transition mode="out-in">
             <router-view
-              :isChatJoin='isChatJoin'
               @sendAuthentication="setAuthentication"
-              @setChatJoin="setChatJoin"
               @setSnackbar="setSnackbar"
               @setDark="setDark"
             ></router-view>
@@ -66,7 +64,6 @@
 export default {
   name: 'Charlie',
   data: () => ({
-    isChatJoin: false,
     isAutoLogin: false,
     isDark: false,
     appTitle: 'UnderSeed',
@@ -79,7 +76,8 @@ export default {
       { title: 'Inspire', to: '/inspire' },
       { title: 'FileList', to: '/fileList' },
       { title: 'Address', to: '/address' },
-      { title: 'Chatting', to: '/Chatting' }
+      { title: 'Chatting', to: '/Chatting' },
+      { title: 'Mail', to: '/Mail' }
     ],
     subMenus: [
       { title: 'Profile', to: '/profile' },
@@ -114,9 +112,6 @@ export default {
       this.snackbar.model = true
       this.snackbar.color = set.color
       this.snackbar.text = set.text
-    },
-    setChatJoin (bool) {
-      this.isChatJoin = bool
     },
     openWelcome () {
       this.$router.push('/welcome')
