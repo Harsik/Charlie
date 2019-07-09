@@ -75,17 +75,9 @@ export default {
     },
     onSendMail () {
       this.isLoading = true
-      // let emailRequest = {
-      //   sender: this.sender,
-      //   receiver: this.receiver,
-      //   subject: this.subject,
-      //   text: this.text
-      // }
       let formData = new FormData()
       console.log(this.files[0].path)
       formData.append('file', this.files[0])
-      // formData.append('filePath', this.files[0].path)
-      // formData.append('mail', JSON.stringify(emailRequest))
       formData.append('sender', this.sender)
       formData.append('receiver', this.receiver)
       formData.append('subject', this.subject)

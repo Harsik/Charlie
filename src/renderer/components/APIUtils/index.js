@@ -40,23 +40,6 @@ const formRequest = options => {
   return fetch(options.url, options).then(response => {})
 }
 
-// const mailRequest = options => {
-//   const headers = new Headers({
-//     'Content-Type': 'multipart/form-data; boundary=----WebKitFormBoundary5IKuSLhzzbDa86h8'
-//   })
-
-//   if (localStorage.accessToken !== 'null') {
-//     headers.append('Authorization', 'Bearer ' + localStorage.accessToken)
-//   }
-
-//   const defaults = {
-//     headers: headers
-//   }
-//   options = Object.assign({}, defaults, options)
-
-//   return fetch(options.url, options).then(response => {})
-// }
-
 const kakaoRequest = options => {
   const headers = new Headers({
     'Content-Type': 'application/json'
@@ -82,7 +65,6 @@ const kakaoRequest = options => {
 }
 
 export function sendEmail (formData) {
-  // console.log(formData)
   return formRequest({
     url: API_BASE_URL + '/mail/send',
     mode: 'no-cors',
