@@ -82,11 +82,12 @@ const kakaoRequest = options => {
 }
 
 export function sendEmail (formData) {
+  // console.log(formData)
   return formRequest({
     url: API_BASE_URL + '/mail/send',
     mode: 'no-cors',
     method: 'POST',
-    body: JSON.stringify(formData)
+    body: formData
   })
 }
 

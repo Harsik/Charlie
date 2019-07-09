@@ -45,7 +45,7 @@ export default {
     fileUrl: null,
     subject: null,
     text: null,
-    receiver: null,
+    receiver: 'aznm12@archivsoft.com',
     isLoading: false,
     valid: true,
     sender: localStorage.email,
@@ -75,24 +75,21 @@ export default {
     },
     onSendMail () {
       this.isLoading = true
-      let emailRequest = {
-        sender: this.sender,
-        receiver: this.receiver,
-        subject: this.subject,
-        text: this.text
-      }
+      // let emailRequest = {
+      //   sender: this.sender,
+      //   receiver: this.receiver,
+      //   subject: this.subject,
+      //   text: this.text
+      // }
       let formData = new FormData()
       console.log(this.files[0].path)
-      formData.append('filePath', this.files[0].path)
-      // formData.append('file', this.files[0])
-      // console.log(this.files[0])
-      console.log(emailRequest)
-      formData.append('mail', emailRequest)
-      // formData.append('sender', this.sender)
-      // formData.append('receiver', this.receiver)
-      // formData.append('subject', this.subject)
-      // formData.append('text', this.text)
-      console.log(formData)
+      formData.append('file', this.files[0])
+      // formData.append('filePath', this.files[0].path)
+      // formData.append('mail', JSON.stringify(emailRequest))
+      formData.append('sender', this.sender)
+      formData.append('receiver', this.receiver)
+      formData.append('subject', this.subject)
+      formData.append('text', this.text)
       sendEmail(formData)
         .then(response => {
           this.isLoading = false
